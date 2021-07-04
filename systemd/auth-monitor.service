@@ -1,0 +1,9 @@
+[Unit]
+Description=AuthMonitor
+
+[Service]
+ExecStart=/usr/bin/auth-monitor-daemon.sh --test
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
