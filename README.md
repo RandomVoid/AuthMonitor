@@ -1,20 +1,24 @@
 # AuthMonitor
-Linux shell tool allowing to power off computer after nth incorrect login attempt. In most cases the password used for encrypting disk is much stronger that user password, so this script can be used as additional protection when your laptop will be lost or stolen.
+Linux shell tool that will power off computer after nth incorrect login attempt. If you use disk encryption, which is strongly recommended, in most cases the password used for disk encryption is much stronger than user password, so this script can be used as additional protection when laptop is lost or stolen. If you don't use disk encryption it won't be useful for you.
 
 ## How it works
 This is a simple script that can be attached to PAM to log success and failed login attempts. On each failed attempt it check if maximum number of attempts has been reached. If so it powers off the computer.
 
 This tool has been created which single user environment in mind, so it's not monitoring login attempts separately for different users.
 
-And the most important: **DO NOT USE IT ON SERVERS!**
+And the most important thing: **DO NOT USE IT ON SERVERS!**
 
 ## Installation
 Following instruction has been created and tested on Ubuntu 21.04.
-1. Run install script:
+1. Run the installation script. It will copy script to `/usr/local/bin/` and configuration to `/etc/default/`:
 ```
 sudo ./install.sh
 ```
-2. Open `/etc/pam.d/common-auth` in text editor and change:
+2. Create a backup of PAM configuration file:
+```
+sudo cp /etc/pam.d/common-auth /etc/pam.d/common-auth.bak
+```
+3. Open `/etc/pam.d/common-auth` in text editor and change:
 ```
 # here are the per-package modules (the "Primary" block)
 auth    [success=1 default=ignore]      pam_unix.so nullok_secure
@@ -27,7 +31,6 @@ auth    required                        pam_permit.so
 # and here are more per-package modules (the "Additional" block)
 auth    optional                        pam_cap.so 
 # end of pam-auth-update config
-
 ```
 to
 ```
@@ -44,7 +47,6 @@ auth    required                        pam_permit.so
 # and here are more per-package modules (the "Additional" block)
 auth    optional                        pam_cap.so 
 # end of pam-auth-update config
-
 ```
 This may looks complicated but you have to do only two changes in this file. First change, following line:
 ```
@@ -81,7 +83,7 @@ LOG_FILE="/var/log/auth-monitor.log"
 ```
 
 ## Testing
-If you want to test script you can run `auth-monitor.sh` with `--test` option. The script won't power off your computer but instead print executed command on the std.
+If you want to test script you can run `auth-monitor.sh` with `--test` option. The script won't power off your computer but instead only print executed command on the standard output.
 
 Run command:
 ```
@@ -95,3 +97,10 @@ You can observe logs by running following command in second console:
 ```
 tail -f /var/log/auth-monitor.log
 ```
+
+## Troubleshooting
+If you can't login to your system after changing PAM configuration, please boot into recovery mode and use root shell to undo changes in `/etc/pam.d/common-auth`. If you created a backup, as it was suggested before, you can simply execute following command:
+```
+cp /etc/pam.d/common-auth.bak /etc/pam.d/common-auth
+```
+Instruction how to boot into recovery mode on Ubuntu: https://wiki.ubuntu.com/RecoveryMode
