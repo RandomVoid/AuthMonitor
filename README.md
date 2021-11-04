@@ -1,8 +1,8 @@
 # AuthMonitor
-Linux shell tool that will power off computer after nth incorrect login attempt. If you use disk encryption, which is strongly recommended, in most cases the password used for disk encryption is much stronger than user password, so this script can be used as additional protection when laptop is lost or stolen. If you don't use disk encryption it won't be useful for you.
+Linux shell tool that will power off computer after nth incorrect login attempt. If you use disk encryption, which is strongly recommended, in most cases the password used for disk encryption is much stronger than user password, so this script can be used as additional protection when notebook is lost or stolen. If you don't use disk encryption it won't be useful for you.
 
 ## How it works
-This is a simple script that can be attached to PAM to log success and failed login attempts. On each failed attempt it check if maximum number of attempts has been reached. If so it powers off the computer.
+This is a simple script that can be attached to PAM to log success and failed login attempts. On each failed attempt it checks if maximum number of attempts has been reached. If so it powers off the computer.
 
 This tool has been created which single user environment in mind, so it's not monitoring login attempts separately for different users.
 
@@ -99,8 +99,9 @@ tail -f /var/log/auth-monitor.log
 ```
 
 ## Troubleshooting
-If you can't login to your system after changing PAM configuration, please boot into recovery mode and use root shell to undo changes in `/etc/pam.d/common-auth`. If you created a backup, as it was suggested before, you can simply execute following command:
+If you can't login to your system after changing PAM configuration, please boot into recovery mode and use root shell to undo changes in `/etc/pam.d/common-auth`. If you created a backup, as it was suggested in the installation instruction, you can simply execute following command:
 ```
 cp /etc/pam.d/common-auth.bak /etc/pam.d/common-auth
 ```
+But in most cases it only requires to redo step 3 from Installation instruction.
 Instruction how to boot into recovery mode on Ubuntu: https://wiki.ubuntu.com/RecoveryMode
