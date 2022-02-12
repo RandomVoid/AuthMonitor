@@ -1,24 +1,41 @@
 # AuthMonitor
-Linux shell tool that will power off computer after nth incorrect login attempt. If you use disk encryption, which is strongly recommended, in most cases the password used for disk encryption is much stronger than user password, so this script can be used as additional protection when notebook is lost or stolen. If you don't use disk encryption it won't be useful for you.
+
+Linux shell tool that will power off computer after nth incorrect login attempt. If you use disk encryption, which is
+strongly recommended, in most cases the password used for disk encryption is much stronger than user password, so this
+script can be used as additional protection when notebook is lost or stolen. If you don't use disk encryption it won't
+be useful for you.
 
 ## How it works
-This is a simple script that can be attached to PAM to log success and failed login attempts. On each failed attempt it checks if maximum number of attempts has been reached. If so it powers off the computer.
 
-This tool has been created which single user environment in mind, so it's not monitoring login attempts separately for different users.
+This is a simple script that can be attached to PAM to log success and failed login attempts. On each failed attempt it
+checks if maximum number of attempts has been reached. If so it powers off the computer.
+
+This is a simple script that can be attached to PAM to log success and failed login attempts. On each failed attempt it
+checks if the maximum number of attempts has been reached. If so it powers off the computer.
+
+This tool has been created with a single user environment in mind, so it's not monitoring login attempts separately for
+different users.
 
 And the most important thing: **DO NOT USE IT ON SERVERS!**
 
 ## Installation
+
 Following instruction has been created and tested on Ubuntu 21.04.
+
 1. Run the installation script. It will copy script to `/usr/local/bin/` and configuration to `/etc/default/`:
+
 ```
 sudo ./install.sh
 ```
+
 2. Create a backup of PAM configuration file:
+
 ```
 sudo cp /etc/pam.d/common-auth /etc/pam.d/common-auth.bak
 ```
-3. Open `/etc/pam.d/common-auth` in text editor and change:
+
+3. Open `/etc/pam.d/common-auth` in the text editor and change:
+
 ```
 # here are the per-package modules (the "Primary" block)
 auth    [success=1 default=ignore]      pam_unix.so nullok_secure
@@ -32,7 +49,9 @@ auth    required                        pam_permit.so
 auth    optional                        pam_cap.so 
 # end of pam-auth-update config
 ```
+
 to
+
 ```
 # here are the per-package modules (the "Primary" block)
 auth    [success=2 default=ignore]      pam_unix.so nullok_secure
@@ -48,23 +67,32 @@ auth    required                        pam_permit.so
 auth    optional                        pam_cap.so 
 # end of pam-auth-update config
 ```
-This may looks complicated but you have to do only two changes in this file. First change, following line:
+
+This may look complicated, but you have to do only two changes in this file. First change, the following line:
+
 ```
 auth    [success=1 default=ignore]      pam_unix.so nullok_secure
 ```
+
 must be changed to:
+
 ```
 auth    [success=2 default=ignore]      pam_unix.so nullok_secure
 auth    optional                        pam_exec.so /usr/local/bin/auth-monitor.sh fail
 ```
-This will allow to execute the script on failed login attempt. Second change is adding following line:
+
+This will allow execution of the script on a failed login attempt. Second change is adding the following line:
+
 ```
 auth    optional                        pam_exec.so /usr/local/bin/auth-monitor.sh success
 ```
-This instruction will execute script on login success.
+
+This instruction will execute the script on login success.
 
 ## Configuration
+
 Configuration options are in file `/etc/default/auth-monitor`.
+
 ```
 # Maximum number of login attempts before your computer will be powered off.
 # Default: 3 
@@ -83,25 +111,37 @@ LOG_FILE="/var/log/auth-monitor.log"
 ```
 
 ## Testing
-If you want to test script you can run `auth-monitor.sh` with `--test` option. The script won't power off your computer but instead only print executed command on the standard output.
+
+If you want to test the script you can run `auth-monitor.sh` with `--test` option. The script won't power off your
+computer but instead only print the executed command on the standard output.
 
 Run command:
+
 ```
 auth-monitor.sh --test fail
 ```
-Or add option in PAM configuration:
+
+Or add option in the PAM configuration:
+
 ```
 auth    optional                        pam_exec.so /usr/local/bin/auth-monitor.sh --test fail
 ```
-You can observe logs by running following command in second console:
+
+You can observe logs by running the following command in the second console:
+
 ```
 tail -f /var/log/auth-monitor.log
 ```
 
 ## Troubleshooting
-If you can't login to your system after changing PAM configuration, please boot into recovery mode and use root shell to undo changes in `/etc/pam.d/common-auth`. If you created a backup, as it was suggested in the installation instruction, you can simply execute following command:
+
+If you can't login to your system after changing PAM configuration, please boot into recovery mode and use root shell to
+undo changes in `/etc/pam.d/common-auth`. If you created a backup, as it was suggested in the installation instruction,
+you can simply execute following command:
+
 ```
 cp /etc/pam.d/common-auth.bak /etc/pam.d/common-auth
 ```
-But in most cases it only requires to redo step 3 from Installation instruction.
-Instruction how to boot into recovery mode on Ubuntu: https://wiki.ubuntu.com/RecoveryMode
+
+But in most cases it only requires to redo step 3 from Installation instruction. Instruction how to boot into recovery
+mode on Ubuntu: https://wiki.ubuntu.com/RecoveryMode
