@@ -27,7 +27,7 @@ echo "OK"
 
 echo -n "Creating log file: $LOG_FILE "
 touch "$LOG_FILE" || die "Error creating log file"
-chmod 666 "$LOG_FILE" || die "Error changing log file permisions"
+chmod 666 "$LOG_FILE" || die "Error changing log file permissions"
 echo "OK"
 
 echo "Installation completed"
