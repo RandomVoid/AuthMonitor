@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $(id -u) -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
   echo "This script must be run by root."
   exit 1
 fi
@@ -13,7 +13,7 @@ CONFIG_PATH=/etc/default/
 SCRIPTS_PATH=/usr/local/bin/
 
 die() {
-  echo $@
+  echo "$@"
   exit 2
 }
 

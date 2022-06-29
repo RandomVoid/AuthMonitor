@@ -7,15 +7,15 @@ log() {
 
 login_failed() {
   log "Authentication failed"
-  log_tail=$(tail -n $MAX_LOGIN_ATTEMPTS "$LOG_FILE")
+  log_tail=$(tail -n "$MAX_LOGIN_ATTEMPTS" "$LOG_FILE")
 
   non_fail_count=$(echo "$log_tail" | grep -c -v "failed")
-  if [ $non_fail_count -gt 0 ]; then
+  if [ "$non_fail_count" -gt 0 ]; then
     exit 0
   fi
 
   fail_count=$(echo "$log_tail" | grep -c "failed")
-  if [ $fail_count -lt $MAX_LOGIN_ATTEMPTS ]; then
+  if [ "$fail_count" -lt "$MAX_LOGIN_ATTEMPTS" ]; then
     exit 0
   fi
 
@@ -29,7 +29,7 @@ login_succeeded() {
   exit 0
 }
 
-if [ ! -r "$LOG_FILE" -a -w "$LOG_FILE" ]; then
+if [ ! -r "$LOG_FILE" ] && [ -w "$LOG_FILE" ]; then
   echo "Script requires read and write access to file: $LOG_FILE"
   exit 1
 fi
