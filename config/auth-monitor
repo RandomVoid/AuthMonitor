@@ -8,7 +8,6 @@ MAX_LOGIN_ATTEMPTS=3
 # Default: systemctl poweroff
 POWER_OFF="systemctl poweroff"
 
-# File were logs are stored.
-# Don't change unless you know what are you doing.
-# Default: /var/log/auth-monitor.log
-LOG_FILE="/var/log/auth-monitor.log"
+# Path to the file with daemon PID
+# Default: /var/run/auth-monitor.pid
+PID_FILE="/var/run/auth-monitor.pid"

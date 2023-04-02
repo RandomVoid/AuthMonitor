@@ -2,6 +2,7 @@
 Description=AuthMonitor
 
 [Service]
+EnvironmentFile=-/etc/default/auth-monitor
 ExecStart=/usr/bin/auth-monitor-daemon.sh --test
 Restart=on-failure
 
