@@ -62,7 +62,7 @@ impl AuthMonitor {
     }
 
     fn reset_failed_attempts(&mut self) {
-        println!("Resetting failed attempt");
+        println!("Resetting failed attempts");
         self.failed_attempts = 0;
         self.last_failed_auth = SystemTime::now();
     }
