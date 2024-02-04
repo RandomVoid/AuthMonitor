@@ -1,0 +1,8 @@
+[package]
+name = "auth_monitor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+inotify = "0.10.2"
+signal-hook = "0.3.17"
