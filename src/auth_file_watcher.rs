@@ -16,7 +16,7 @@ impl AuthFileWatcher {
         let inotify = Inotify::init()?;
         let mut file = File::open(filepath)?;
         file.seek(SeekFrom::End(0))?;
-        inotify.watches().add(&filepath, WatchMask::MODIFY)?;
+        inotify.watches().add(filepath, WatchMask::MODIFY)?;
         return Ok(AuthFileWatcher {
             inotify,
             reader: BufReader::new(file),

@@ -89,7 +89,7 @@ impl AuthMonitorUpdate for AuthMonitor {
         }
         let mut failed_attempts = 0;
         self.file_watcher.update(|line| {
-            if is_auth_failed_message(&line) {
+            if is_auth_failed_message(line) {
                 failed_attempts += 1;
             }
         });

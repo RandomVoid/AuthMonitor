@@ -5,12 +5,12 @@ use crate::auth_monitor::AuthMonitorParams;
 const DEFAULT_MAX_FAILED_ATTEMPTS: i32 = 3;
 const DEFAULT_RESET_AFTER_SECONDS: i32 = 30 * 60;
 
-pub fn parse_arguments(arguments: &Vec<String>) -> Result<AuthMonitorParams, Box<dyn Error>> {
+pub fn parse_arguments(arguments: &[String]) -> Result<AuthMonitorParams, Box<dyn Error>> {
     let mut filepath: Option<String> = None;
     let mut max_failed_attempts = DEFAULT_MAX_FAILED_ATTEMPTS;
     let mut reset_after_seconds = DEFAULT_RESET_AFTER_SECONDS;
     let mut iterator = arguments.iter();
-    while let Some(arg) = iterator.next() {
+    while let Some(arg) = iterator.by_ref().next() {
         if !arg.starts_with("--") {
             if filepath.is_some() {
                 return Err("File path specified more than once")?;
@@ -18,7 +18,7 @@ pub fn parse_arguments(arguments: &Vec<String>) -> Result<AuthMonitorParams, Box
             filepath = Some(String::from(arg));
             continue;
         }
-        let mut arguments = arg.split("=");
+        let mut arguments = arg.split('=');
         let name = match arguments.next() {
             Some(name) => String::from_iter(name.chars().skip(2)),
             None => Err("Missing option name")?,

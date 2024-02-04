@@ -1,3 +1,6 @@
+#![deny(clippy::implicit_return)]
+#![allow(clippy::needless_return)]
+
 use std::process::{Command, ExitCode};
 use std::time::Duration;
 use std::{env, process, thread};
@@ -16,7 +19,7 @@ mod message_parser;
 const SLEEP_DURATION: Duration = Duration::from_millis(500);
 
 fn main() -> ExitCode {
-    let arguments = env::args().skip(1).collect();
+    let arguments: Vec<String> = env::args().skip(1).collect();
     let params = match parse_arguments(&arguments) {
         Ok(params) => params,
         Err(error) => {
@@ -42,11 +45,12 @@ fn start_monitoring(params: AuthMonitorParams) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let mut signals = Signals::new(&[SIGABRT, SIGINT]).unwrap();
+    let mut signals = Signals::new([SIGABRT, SIGINT]).unwrap();
     loop {
         auth_monitor.update(shutdown);
-        for signal in signals.pending() {
-            println!("Received signal {}, stopping...", signal);
+        let signal = signals.pending().next();
+        if signal.is_some() {
+            println!("Received signal {}, stopping...", signal.unwrap());
             return ExitCode::SUCCESS;
         }
         thread::sleep(SLEEP_DURATION);
@@ -69,9 +73,6 @@ fn shutdown() {
     };
     match String::from_utf8(output.stdout) {
         Ok(stdout) => println!("Shutdown output: {}", stdout),
-        Err(error) => {
-            eprintln!("Error converting command output to string: {}", error);
-            return;
-        }
+        Err(error) => eprintln!("Error converting command output to string: {}", error),
     };
 }

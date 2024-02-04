@@ -7,18 +7,12 @@ pub fn is_auth_failed_message(message: &str) -> bool {
         return false;
     }
     let (_, after_prefix_part) = message.split_at(prefix_position.unwrap());
-    if after_prefix_part.find(AUTH_FAILURE_MESSAGE).is_none() {
-        return false;
-    }
-    return true;
+    return after_prefix_part.contains(AUTH_FAILURE_MESSAGE);
 }
 
 fn find_pam_prefix_end(message: &str) -> Option<usize> {
-    let position = message.find(PAM_PREFIX);
-    if position.is_none() {
-        return None;
-    }
-    return Some(position.unwrap() + PAM_PREFIX.len());
+    let position = message.find(PAM_PREFIX)?;
+    return Some(position + PAM_PREFIX.len());
 }
 
 #[cfg(test)]
