@@ -41,7 +41,7 @@ fn start_monitoring(params: AuthMonitorParams) -> ExitCode {
     let mut auth_monitor = match AuthMonitor::new(params) {
         Ok(auth_monitor) => auth_monitor,
         Err(e) => {
-            eprintln!("Error crating AuthMonitor: {}", e);
+            eprintln!("Error creating AuthMonitor: {}", e);
             return ExitCode::FAILURE;
         }
     };
