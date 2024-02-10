@@ -8,6 +8,6 @@ fn contains_auth_failed_message_success() {
         "2023-04-22T12:22:53.157054+02:00 workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname= uid=1000 euid=1000 tty= ruser= rhost=  user=john",
     ];
     for message in messages {
-        assert!(is_auth_failed_message(&message));
+        assert!(is_auth_failed_message(message));
     }
 }
