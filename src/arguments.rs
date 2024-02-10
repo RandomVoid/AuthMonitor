@@ -24,7 +24,7 @@ pub fn parse_arguments(arguments: &[String]) -> Result<AuthMonitorParams, Box<dy
     for argument in arguments_iterator {
         if !argument.starts_with(OPTION_PREFIX) {
             if filepath.is_some() {
-                return Err("File path specified more than once")?;
+                Err("File path specified more than once")?;
             }
             filepath = Some(String::from(argument));
             continue;
@@ -48,7 +48,7 @@ pub fn parse_arguments(arguments: &[String]) -> Result<AuthMonitorParams, Box<dy
     }
 
     if filepath.is_none() {
-        return Err("File path not specified")?;
+        Err("File path not specified")?;
     }
 
     return Ok(AuthMonitorParams {
@@ -67,7 +67,7 @@ fn parse_option_value<T: FromStr>(
         None => Err(format!("Missing value for option {}", name))?,
     };
     if value.is_empty() {
-        return Err(format!("Missing value for option {}", name))?;
+        Err(format!("Missing value for option {}", name))?;
     }
     return match value.parse::<T>() {
         Ok(value) => Ok(value),
