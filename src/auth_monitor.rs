@@ -36,10 +36,10 @@ pub trait AuthMonitorUpdate {
 impl AuthMonitor {
     pub fn new(params: AuthMonitorParams) -> Result<AuthMonitor, Box<dyn Error>> {
         if params.max_failed_attempts <= 0 {
-            return Err("max_failed_attempts must be greater than 0")?;
+            return Err("max-failed-attempts must be greater than 0")?;
         }
         if params.reset_after_seconds <= 0 {
-            return Err("reset_after_seconds must be greater than 0")?;
+            return Err("reset-after-seconds must be greater than 0")?;
         }
         return Ok(AuthMonitor {
             failed_attempts: 0,
