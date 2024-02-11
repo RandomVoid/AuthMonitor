@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 inotify = "0.10.2"
 signal-hook = "0.3.17"
+
+[dev-dependencies]
+chrono = "0.4.34"
