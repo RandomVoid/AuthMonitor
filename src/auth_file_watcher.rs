@@ -12,7 +12,7 @@ pub struct AuthFileWatcher {
 }
 
 impl AuthFileWatcher {
-    pub fn new(filepath: &String) -> Result<AuthFileWatcher, Box<dyn Error>> {
+    pub fn new(filepath: &str) -> Result<AuthFileWatcher, Box<dyn Error>> {
         let inotify = Inotify::init()?;
         let mut file = File::open(filepath)?;
         file.seek(SeekFrom::End(0))?;
