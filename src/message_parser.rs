@@ -1,4 +1,5 @@
 const PAM_PREFIX: &str = "pam_unix";
+const PAM_PREFIX_LENGTH: usize = PAM_PREFIX.len();
 const AUTH_FAILURE_MESSAGE: &str = "authentication failure";
 
 pub fn is_auth_failed_message(message: &str) -> bool {
@@ -12,7 +13,7 @@ pub fn is_auth_failed_message(message: &str) -> bool {
 
 fn find_pam_prefix_end(message: &str) -> Option<usize> {
     let position = message.find(PAM_PREFIX)?;
-    return Some(position + PAM_PREFIX.len());
+    return Some(position + PAM_PREFIX_LENGTH);
 }
 
 #[cfg(test)]
