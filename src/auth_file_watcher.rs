@@ -57,3 +57,7 @@ impl AuthFileWatcher {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "./auth_file_watcher_test.rs"]
+mod test;
