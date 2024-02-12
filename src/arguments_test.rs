@@ -1,4 +1,3 @@
-#[cfg(test)]
 use crate::arguments::{
     parse_arguments, DEFAULT_MAX_FAILED_ATTEMPTS, DEFAULT_RESET_AFTER_SECONDS,
     MAX_FAILED_ATTEMPTS_OPTION, RESET_AFTER_SECONDS_OPTION,

@@ -1,4 +1,3 @@
-#[cfg(test)]
 use crate::message_parser::is_auth_failed_message;
 
 #[test]
