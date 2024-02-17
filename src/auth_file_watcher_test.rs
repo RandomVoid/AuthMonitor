@@ -11,10 +11,7 @@ use crate::auth_file_watcher::AuthFileWatcher;
 fn file_not_exist() {
     let filepath_buffer = temp_dir().join("auth-monitor-non-existing-file.log");
     let filepath = filepath_buffer.to_str().expect("Error creating filepath");
-    match AuthFileWatcher::new(filepath) {
-        Ok(_) => panic!("Error was expected"),
-        Err(error) => assert_eq!(error.to_string(), "No such file or directory (os error 2)"),
-    };
+    AuthFileWatcher::new(filepath).expect("Error was not expected");
 }
 
 const AUTH_FAILED_MESSAGES: [&str; 6] = [
@@ -43,6 +40,11 @@ impl TestFile {
         };
     }
 
+    pub fn create(&mut self) {
+        println!("Creating test file: {}", &self.filepath);
+        self.file = File::create(&self.filepath).expect("Error creating test file");
+    }
+
     pub fn write(&mut self, message: &str) {
         let bytes_to_add = message.as_bytes();
         let bytes_written = self
@@ -51,12 +53,16 @@ impl TestFile {
             .expect("Error writing to file");
         assert_eq!(bytes_written, bytes_to_add.len());
     }
+
+    pub fn remove(&mut self) {
+        println!("Removing test file: {}", self.filepath);
+        remove_file(&self.filepath).expect("Unable to remove test file");
+    }
 }
 
 impl Drop for TestFile {
     fn drop(&mut self) {
-        println!("Removing test file: {}", self.filepath);
-        remove_file(&self.filepath).expect("Unable to delete test file");
+        self.remove();
     }
 }
 
@@ -69,6 +75,10 @@ fn update_callback_is_called_when_new_line_is_added_to_file() {
         panic!("Callback call was not expected");
     });
 
+    test_file_modification(&mut file, &mut auth_file_watcher);
+}
+
+fn test_file_modification(file: &mut TestFile, auth_file_watcher: &mut AuthFileWatcher) {
     let mut call_count = 0;
     for i in 0..10 {
         let date_time = Local::now().format("%+");
@@ -112,4 +122,26 @@ fn update_callback_is_called_for_each_line_added_to_file() {
             lines_to_add.len()
         );
     }
+}
+
+#[test]
+fn new_file_was_created_after_old_was_moved() {
+    let mut file = TestFile::new("auth-monitor-test");
+    let mut auth_file_watcher =
+        AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
+    auth_file_watcher.update(|_| {
+        panic!("Callback call was not expected");
+    });
+
+    file.remove();
+    auth_file_watcher.update(|_| {
+        panic!("Callback call was not expected");
+    });
+
+    file.create();
+    auth_file_watcher.update(|_| {
+        panic!("Callback call was not expected");
+    });
+
+    test_file_modification(&mut file, &mut auth_file_watcher);
 }

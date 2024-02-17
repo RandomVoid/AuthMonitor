@@ -12,8 +12,10 @@ use crate::arguments::parse_arguments;
 use crate::auth_monitor::{AuthMonitor, AuthMonitorParams, AuthMonitorUpdate};
 
 mod arguments;
+mod auth_file_reader;
 mod auth_file_watcher;
 mod auth_monitor;
+mod file_action;
 mod message_parser;
 
 const SLEEP_DURATION: Duration = Duration::from_millis(500);

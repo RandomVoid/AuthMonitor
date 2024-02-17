@@ -1,31 +1,78 @@
 use std::error::Error;
-use std::fs::File;
-use std::io::{BufRead, BufReader, ErrorKind, Seek, SeekFrom};
+use std::io::ErrorKind;
+use std::path::Path;
 
-use inotify::{EventMask, Inotify, WatchMask};
+use inotify::{Inotify, WatchMask};
+
+use crate::auth_file_reader::AuthFileReader;
+use crate::file_action::FileAction;
+
+const EVENT_BUFFER_SIZE: usize = 1024;
+const READER_BUFFER_SIZE: usize = 1024;
 
 pub struct AuthFileWatcher {
+    filepath: String,
     inotify: Inotify,
-    reader: BufReader<File>,
-    event_buffer: [u8; 1024],
-    file_content_buffer: String,
+    event_buffer: [u8; EVENT_BUFFER_SIZE],
+    reader: Option<AuthFileReader>,
 }
 
 impl AuthFileWatcher {
     pub fn new(filepath: &str) -> Result<AuthFileWatcher, Box<dyn Error>> {
+        let path = Path::new(filepath);
+        let dir = match path.parent() {
+            Some(dir) => dir,
+            None => Err("Unable to get parent from file path")?,
+        };
         let inotify = Inotify::init()?;
-        let mut file = File::open(filepath)?;
-        file.seek(SeekFrom::End(0))?;
-        inotify.watches().add(filepath, WatchMask::MODIFY)?;
-        return Ok(AuthFileWatcher {
+        let dir_watch_mask = WatchMask::CREATE | WatchMask::DELETE | WatchMask::MOVED_FROM;
+        inotify.watches().add(dir, dir_watch_mask)?;
+        let mut auth_file_watcher = AuthFileWatcher {
+            filepath: String::from(filepath),
             inotify,
-            reader: BufReader::new(file),
-            event_buffer: [0u8; 1024],
-            file_content_buffer: String::with_capacity(1024),
-        });
+            event_buffer: [0u8; EVENT_BUFFER_SIZE],
+            reader: None,
+        };
+        auth_file_watcher.open_existing_file();
+        return Ok(auth_file_watcher);
     }
 
-    pub fn update<F: FnMut(&String)>(&mut self, mut parse_line: F) {
+    fn open_existing_file(&mut self) {
+        self.open_file();
+        match &mut self.reader {
+            Some(reader) => {
+                reader.seek_to_end().unwrap_or_else(|error| {
+                    eprintln!("Error seeking to end of file: {}", error);
+                });
+            }
+            None => {}
+        }
+    }
+
+    fn open_file(&mut self) {
+        let reader = match AuthFileReader::new(&self.filepath, READER_BUFFER_SIZE) {
+            Ok(reader) => reader,
+            Err(error) => {
+                eprintln!("Unable to open monitored file: {}", error);
+                return;
+            }
+        };
+        match self
+            .inotify
+            .watches()
+            .add(&self.filepath, WatchMask::MODIFY)
+        {
+            Ok(_) => {}
+            Err(error) => {
+                eprintln!("Error adding file watch: {}", error);
+                return;
+            }
+        }
+        println!("Monitored file opened");
+        self.reader = Some(reader);
+    }
+
+    pub fn update<F: FnMut(&String)>(&mut self, parse_line: F) {
         let events = match self.inotify.read_events(&mut self.event_buffer) {
             Ok(events) => events,
             Err(error) => {
@@ -35,26 +82,48 @@ impl AuthFileWatcher {
                 return;
             }
         };
+
+        let mut file_modified = false;
+
         for event in events {
             println!("Event: {:?}", event);
-            if event.mask & EventMask::MODIFY == EventMask::MODIFY {
-                loop {
-                    self.file_content_buffer.clear();
-                    let bytes_read = match self.reader.read_line(&mut self.file_content_buffer) {
-                        Ok(bytes_read) => bytes_read,
-                        Err(error) => {
-                            eprintln!("Error reading file: {}", error);
-                            return;
-                        }
-                    };
-                    if bytes_read == 0 {
-                        break;
-                    }
-                    print!("Line added: {}", self.file_content_buffer);
-                    parse_line(&self.file_content_buffer);
-                }
+            let action = FileAction::from_event(&event, &self.filepath);
+            if action.is_none() {
+                continue;
             }
+            match action.unwrap() {
+                FileAction::Created => {
+                    println!("New monitored file has been created");
+                    self.open_new_file();
+                    file_modified = true;
+                    break;
+                }
+                FileAction::Modified => {
+                    println!("Monitored file has been modified");
+                    file_modified = true;
+                }
+                FileAction::Moved | FileAction::Deleted => {
+                    println!("Monitored file has been deleted or moved");
+                    self.reader = None;
+                    continue;
+                }
+            };
         }
+
+        if !file_modified {
+            return;
+        }
+
+        match &mut self.reader {
+            Some(reader) => {
+                reader.read_new_lines(parse_line);
+            }
+            None => {}
+        };
+    }
+
+    fn open_new_file(&mut self) {
+        self.open_file();
     }
 }
 
