@@ -9,6 +9,13 @@ pub struct FilePath {
 impl FilePath {
     pub fn parse(filepath: &str) -> Result<FilePath, Box<dyn Error>> {
         let full_path = Path::new(filepath);
+        return Ok(FilePath {
+            directory: Self::get_directory(full_path)?,
+            filename: Self::get_filename(full_path)?,
+        });
+    }
+
+    fn get_directory(full_path: &Path) -> Result<String, Box<dyn Error>> {
         let directory_path = match full_path.parent() {
             Some(dir) => dir,
             None => Err("Unable to get directory name from file path")?,
@@ -26,6 +33,10 @@ impl FilePath {
             }
             None => Err("Unable to convert directory name to string")?,
         };
+        return Ok(directory);
+    }
+
+    fn get_filename(full_path: &Path) -> Result<String, Box<dyn Error>> {
         let optional_filename = match full_path.file_name() {
             Some(filename) => filename.to_str(),
             None => Err("Unable to get file name from file path")?,
@@ -39,10 +50,6 @@ impl FilePath {
             }
             None => Err("Unable to convert file name to string")?,
         };
-
-        return Ok(FilePath {
-            directory,
-            filename,
-        });
+        return Ok(filename);
     }
 }
