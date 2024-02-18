@@ -1,7 +1,8 @@
 use std::env::temp_dir;
-use std::fs::remove_file;
 use std::fs::File;
+use std::fs::{remove_file, rename};
 use std::io::Write;
+use std::path::Path;
 
 use chrono::Local;
 
@@ -54,6 +55,11 @@ impl TestFile {
         assert_eq!(bytes_written, bytes_to_add.len());
     }
 
+    pub fn truncate(&mut self) {
+        println!("Truncating test file: {}", self.filepath);
+        self.file.set_len(0).expect("Error truncating file");
+    }
+
     pub fn remove(&mut self) {
         println!("Removing test file: {}", self.filepath);
         remove_file(&self.filepath).expect("Unable to remove test file");
@@ -71,10 +77,7 @@ fn update_callback_is_called_when_new_line_is_added_to_file() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
-    auth_file_watcher.update(|_| {
-        panic!("Callback call was not expected");
-    });
-
+    expect_no_update_callback_call(&mut auth_file_watcher);
     test_file_modification(&mut file, &mut auth_file_watcher);
 }
 
@@ -98,9 +101,7 @@ fn update_callback_is_called_for_each_line_added_to_file() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
-    auth_file_watcher.update(|_| {
-        panic!("Callback call was not expected");
-    });
+    expect_no_update_callback_call(&mut auth_file_watcher);
 
     let mut call_count = 0;
     for i in 0..10 {
@@ -125,23 +126,62 @@ fn update_callback_is_called_for_each_line_added_to_file() {
 }
 
 #[test]
-fn new_file_was_created_after_old_was_moved() {
+fn new_file_was_created_after_old_was_deleted() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
-    auth_file_watcher.update(|_| {
-        panic!("Callback call was not expected");
-    });
+    expect_no_update_callback_call(&mut auth_file_watcher);
 
     file.remove();
-    auth_file_watcher.update(|_| {
-        panic!("Callback call was not expected");
-    });
+    expect_no_update_callback_call(&mut auth_file_watcher);
 
     file.create();
+    expect_no_update_callback_call(&mut auth_file_watcher);
+
+    test_file_modification(&mut file, &mut auth_file_watcher);
+}
+
+fn expect_no_update_callback_call(auth_file_watcher: &mut AuthFileWatcher) {
     auth_file_watcher.update(|_| {
         panic!("Callback call was not expected");
     });
+}
+
+#[test]
+fn new_file_was_created_after_old_was_renamed() {
+    let mut file = TestFile::new("auth-monitor-test");
+    let mut auth_file_watcher =
+        AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
+    expect_no_update_callback_call(&mut auth_file_watcher);
+
+    rename_file(&file.filepath, "auth-monitor-test.bak");
+    expect_no_update_callback_call(&mut auth_file_watcher);
+
+    file.create();
+    expect_no_update_callback_call(&mut auth_file_watcher);
+
+    test_file_modification(&mut file, &mut auth_file_watcher);
+}
+
+fn rename_file(filepath: &str, new_filename: &str) {
+    println!("Renaming test file {} to {}", filepath, new_filename);
+    let new_path = Path::new(&filepath)
+        .parent()
+        .expect("Unable to get directory")
+        .join(new_filename);
+    let new_filepath = new_path.to_str().expect("Unable to build file path");
+    rename(filepath, new_filepath).expect("Unable to rename test file");
+}
+
+#[test]
+fn new_file_was_created_after_old_was_truncated() {
+    let mut file = TestFile::new("auth-monitor-test");
+    let mut auth_file_watcher =
+        AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
+    expect_no_update_callback_call(&mut auth_file_watcher);
+
+    file.truncate();
+    expect_no_update_callback_call(&mut auth_file_watcher);
 
     test_file_modification(&mut file, &mut auth_file_watcher);
 }
