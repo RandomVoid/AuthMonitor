@@ -1,11 +1,11 @@
 use std::error::Error;
 use std::io::ErrorKind;
-use std::path::Path;
 
 use inotify::{Inotify, WatchMask};
 
 use crate::auth_file_reader::AuthFileReader;
-use crate::file_action::FileAction;
+use crate::file_event_filter::{FileAction, FileEventFilter};
+use crate::file_path::FilePath;
 
 const EVENT_BUFFER_SIZE: usize = 1024;
 const READER_BUFFER_SIZE: usize = 1024;
@@ -15,23 +15,24 @@ pub struct AuthFileWatcher {
     inotify: Inotify,
     event_buffer: [u8; EVENT_BUFFER_SIZE],
     reader: Option<AuthFileReader>,
+    event_filter: FileEventFilter,
 }
 
 impl AuthFileWatcher {
     pub fn new(filepath: &str) -> Result<AuthFileWatcher, Box<dyn Error>> {
-        let path = Path::new(filepath);
-        let dir = match path.parent() {
-            Some(dir) => dir,
-            None => Err("Unable to get parent from file path")?,
-        };
+        let FilePath {
+            directory,
+            filename,
+        } = FilePath::parse(filepath)?;
         let inotify = Inotify::init()?;
-        let dir_watch_mask = WatchMask::CREATE | WatchMask::DELETE | WatchMask::MOVED_FROM;
-        inotify.watches().add(dir, dir_watch_mask)?;
+        let directory_watch_mask = WatchMask::CREATE | WatchMask::DELETE | WatchMask::MOVED_FROM;
+        inotify.watches().add(directory, directory_watch_mask)?;
         let mut auth_file_watcher = AuthFileWatcher {
             filepath: String::from(filepath),
             inotify,
             event_buffer: [0u8; EVENT_BUFFER_SIZE],
             reader: None,
+            event_filter: FileEventFilter::new(&filename),
         };
         auth_file_watcher.open_existing_file();
         return Ok(auth_file_watcher);
@@ -87,7 +88,7 @@ impl AuthFileWatcher {
 
         for event in events {
             println!("Event: {:?}", event);
-            let action = FileAction::from_event(&event, &self.filepath);
+            let action = self.event_filter.get_action(&event);
             if action.is_none() {
                 continue;
             }

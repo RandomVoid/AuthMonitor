@@ -1,7 +1,10 @@
 use std::ffi::OsStr;
-use std::path::Path;
 
 use inotify::{Event, EventMask};
+
+pub struct FileEventFilter {
+    filename: String,
+}
 
 pub enum FileAction {
     Created,
@@ -10,14 +13,19 @@ pub enum FileAction {
     Deleted,
 }
 
-impl FileAction {
-    pub fn from_event(event: &Event<&OsStr>, filepath: &str) -> Option<FileAction> {
+impl FileEventFilter {
+    pub fn new(filename: &str) -> FileEventFilter {
+        return FileEventFilter {
+            filename: String::from(filename),
+        };
+    }
+
+    pub fn get_action(&self, event: &Event<&OsStr>) -> Option<FileAction> {
         if event.mask.contains(EventMask::MODIFY) {
             return Some(FileAction::Modified);
         }
-        let event_filename = event.name?;
-        let filename = Path::new(filepath).file_name()?;
-        if event_filename != filename {
+        let event_filename = event.name?.to_str()?;
+        if event_filename != self.filename {
             return None;
         }
         if event.mask.contains(EventMask::CREATE) {

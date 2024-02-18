@@ -15,7 +15,8 @@ mod arguments;
 mod auth_file_reader;
 mod auth_file_watcher;
 mod auth_monitor;
-mod file_action;
+mod file_event_filter;
+mod file_path;
 mod message_parser;
 
 const SLEEP_DURATION: Duration = Duration::from_millis(500);
