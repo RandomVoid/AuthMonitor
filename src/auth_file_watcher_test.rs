@@ -8,13 +8,6 @@ use chrono::Local;
 
 use crate::auth_file_watcher::AuthFileWatcher;
 
-#[test]
-fn file_not_exist() {
-    let filepath_buffer = temp_dir().join("auth-monitor-non-existing-file.log");
-    let filepath = filepath_buffer.to_str().expect("Error creating filepath");
-    AuthFileWatcher::new(filepath).expect("Error was not expected");
-}
-
 const AUTH_FAILED_MESSAGES: [&str; 6] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
     "workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname= uid=1000 euid=1000 tty= ruser= rhost=  user=john",
@@ -70,6 +63,13 @@ impl Drop for TestFile {
     fn drop(&mut self) {
         self.remove();
     }
+}
+
+#[test]
+fn file_not_exist() {
+    let filepath_buffer = temp_dir().join("auth-monitor-non-existing-file.log");
+    let filepath = filepath_buffer.to_str().expect("Error creating filepath");
+    AuthFileWatcher::new(filepath).expect("Error creating AuthFileWatcher");
 }
 
 #[test]
