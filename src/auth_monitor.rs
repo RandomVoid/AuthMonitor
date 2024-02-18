@@ -11,6 +11,16 @@ pub struct AuthMonitorParams {
     pub reset_after_seconds: i32,
 }
 
+impl Default for AuthMonitorParams {
+    fn default() -> Self {
+        return AuthMonitorParams {
+            filepath: String::new(),
+            max_failed_attempts: 3,
+            reset_after_seconds: 1800,
+        };
+    }
+}
+
 impl Display for AuthMonitorParams {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
         return write!(

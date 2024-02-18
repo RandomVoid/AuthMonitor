@@ -12,21 +12,16 @@ const OPTION_VALUE_SEPARATOR_LENGTH: usize = 1;
 const MAX_FAILED_ATTEMPTS_OPTION: &str = "max-failed-attempts";
 const RESET_AFTER_SECONDS_OPTION: &str = "reset-after-seconds";
 
-const DEFAULT_MAX_FAILED_ATTEMPTS: i32 = 3;
-const DEFAULT_RESET_AFTER_SECONDS: i32 = 30 * 60;
-
 pub fn parse_arguments(arguments: &[String]) -> Result<AuthMonitorParams, Box<dyn Error>> {
-    let mut filepath: Option<String> = None;
-    let mut max_failed_attempts = DEFAULT_MAX_FAILED_ATTEMPTS;
-    let mut reset_after_seconds = DEFAULT_RESET_AFTER_SECONDS;
+    let mut params = AuthMonitorParams::default();
     let arguments_iterator = arguments.iter();
 
     for argument in arguments_iterator {
         if !argument.starts_with(OPTION_PREFIX) {
-            if filepath.is_some() {
+            if !params.filepath.is_empty() {
                 Err("File path specified more than once")?;
             }
-            filepath = Some(String::from(argument));
+            params.filepath = String::from(argument);
             continue;
         }
         let (option_name, option_value) = match argument.find(OPTION_VALUE_SEPARATOR) {
@@ -38,24 +33,20 @@ pub fn parse_arguments(arguments: &[String]) -> Result<AuthMonitorParams, Box<dy
         };
         match &option_name[OPTION_PREFIX_LENGTH..] {
             MAX_FAILED_ATTEMPTS_OPTION => {
-                max_failed_attempts = parse_option_value(option_name, option_value)?;
+                params.max_failed_attempts = parse_option_value(option_name, option_value)?;
             }
             RESET_AFTER_SECONDS_OPTION => {
-                reset_after_seconds = parse_option_value(option_name, option_value)?;
+                params.reset_after_seconds = parse_option_value(option_name, option_value)?;
             }
             _ => Err(format!("Unknown option {}", argument))?,
         }
     }
 
-    if filepath.is_none() {
+    if params.filepath.is_empty() {
         Err("File path not specified")?;
     }
 
-    return Ok(AuthMonitorParams {
-        filepath: filepath.unwrap(),
-        max_failed_attempts,
-        reset_after_seconds,
-    });
+    return Ok(params);
 }
 
 fn parse_option_value<T: FromStr>(

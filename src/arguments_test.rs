@@ -1,7 +1,5 @@
-use crate::arguments::{
-    parse_arguments, DEFAULT_MAX_FAILED_ATTEMPTS, DEFAULT_RESET_AFTER_SECONDS,
-    MAX_FAILED_ATTEMPTS_OPTION, RESET_AFTER_SECONDS_OPTION,
-};
+use crate::arguments::{parse_arguments, MAX_FAILED_ATTEMPTS_OPTION, RESET_AFTER_SECONDS_OPTION};
+use crate::auth_monitor::AuthMonitorParams;
 
 const FILEPATH: &str = "/var/log/auth.log";
 
@@ -17,11 +15,12 @@ fn parse_no_arguments() {
 #[test]
 fn parse_filepath_without_options() {
     let arguments = [String::from(FILEPATH)];
+    let default_params = AuthMonitorParams::default();
     test_parse_arguments(
         &arguments,
         FILEPATH,
-        DEFAULT_MAX_FAILED_ATTEMPTS,
-        DEFAULT_RESET_AFTER_SECONDS,
+        default_params.max_failed_attempts,
+        default_params.reset_after_seconds,
     );
 }
 
@@ -43,6 +42,7 @@ fn test_parse_arguments(
 
 #[test]
 fn parse_options_with_correct_values() {
+    let default_params = AuthMonitorParams::default();
     let options = [MAX_FAILED_ATTEMPTS_OPTION, RESET_AFTER_SECONDS_OPTION];
     for option in options {
         let value = 30;
@@ -50,11 +50,11 @@ fn parse_options_with_correct_values() {
         let arguments = [String::from(FILEPATH), option_argument];
         let max_failed_attempts = match option == MAX_FAILED_ATTEMPTS_OPTION {
             true => value,
-            false => DEFAULT_MAX_FAILED_ATTEMPTS,
+            false => default_params.max_failed_attempts,
         };
         let reset_after_seconds = match option == RESET_AFTER_SECONDS_OPTION {
             true => value,
-            false => DEFAULT_RESET_AFTER_SECONDS,
+            false => default_params.reset_after_seconds,
         };
         test_parse_arguments(
             &arguments,
