@@ -84,9 +84,8 @@ fn update_callback_is_called_when_new_line_is_added_to_file() {
 fn test_file_modification(file: &mut TestFile, auth_file_watcher: &mut AuthFileWatcher) {
     let mut call_count = 0;
     for i in 0..10 {
-        let date_time = Local::now().format("%+");
         let message = AUTH_FAILED_MESSAGES[i % AUTH_FAILED_MESSAGES.len()];
-        let line_to_add = format!("{} {}\n", date_time, message);
+        let line_to_add = create_log_line(message);
         file.write(&line_to_add);
         auth_file_watcher.update(|line| {
             call_count += 1;
@@ -94,6 +93,11 @@ fn test_file_modification(file: &mut TestFile, auth_file_watcher: &mut AuthFileW
         });
         assert_eq!(call_count, i + 1, "Callback call was expected");
     }
+}
+
+fn create_log_line(message: &str) -> String {
+    let date_time = Local::now().format("%+");
+    return format!("{} {}\n", date_time, message);
 }
 
 #[test]
@@ -105,10 +109,7 @@ fn update_callback_is_called_for_each_line_added_to_file() {
 
     let mut call_count = 0;
     for i in 0..10 {
-        let lines_to_add = AUTH_FAILED_MESSAGES.map(|message| {
-            let date_time = Local::now().format("%+");
-            return format!("{} {}\n", date_time, message);
-        });
+        let lines_to_add = AUTH_FAILED_MESSAGES.map(create_log_line);
         for line in &lines_to_add {
             file.write(line)
         }
