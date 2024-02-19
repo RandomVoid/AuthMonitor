@@ -32,7 +32,6 @@ impl AuthFileReader {
                     return 0;
                 });
             if bytes_read > 0 {
-                print!("Line added: {}", self.file_content_buffer);
                 parse_line(&self.file_content_buffer);
                 continue;
             }

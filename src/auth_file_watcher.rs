@@ -87,7 +87,6 @@ impl AuthFileWatcher {
         let mut file_modified = false;
 
         for event in events {
-            println!("Event: {:?}", event);
             let action = self.event_filter.get_action(&event);
             if action.is_none() {
                 continue;
@@ -100,7 +99,6 @@ impl AuthFileWatcher {
                     break;
                 }
                 FileAction::Modified => {
-                    println!("Monitored file has been modified");
                     file_modified = true;
                 }
                 FileAction::Moved | FileAction::Deleted => {
