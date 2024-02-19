@@ -39,10 +39,6 @@ pub struct AuthMonitor {
     last_failed_auth: SystemTime,
 }
 
-pub trait AuthMonitorUpdate {
-    fn update<F: FnOnce()>(&mut self, on_max_failed_attempts: F);
-}
-
 impl AuthMonitor {
     pub fn new(params: AuthMonitorParams) -> Result<AuthMonitor, Box<dyn Error>> {
         if params.max_failed_attempts <= 0 {
@@ -58,6 +54,21 @@ impl AuthMonitor {
             file_watcher: AuthFileWatcher::new(&params.filepath)?,
             last_failed_auth: SystemTime::UNIX_EPOCH,
         });
+    }
+
+    pub fn update(&mut self, on_max_failed_attempts: impl FnOnce()) {
+        if self.should_reset_failed_attempts() {
+            self.reset_failed_attempts();
+        }
+        let mut failed_attempts = 0;
+        self.file_watcher.update(|line| {
+            if is_auth_failed_message(line) {
+                failed_attempts += 1;
+            }
+        });
+        if failed_attempts > 0 {
+            self.increase_failed_attempts(failed_attempts, on_max_failed_attempts);
+        }
     }
 
     fn should_reset_failed_attempts(&self) -> bool {
@@ -77,10 +88,10 @@ impl AuthMonitor {
         self.last_failed_auth = SystemTime::now();
     }
 
-    fn increase_failed_attempts<F: FnOnce()>(
+    fn increase_failed_attempts(
         &mut self,
         failed_attempts: i32,
-        on_max_failed_attempts: F,
+        on_max_failed_attempts: impl FnOnce(),
     ) {
         self.last_failed_auth = SystemTime::now();
         self.failed_attempts += failed_attempts;
@@ -88,23 +99,6 @@ impl AuthMonitor {
         if self.failed_attempts >= self.max_failed_attempts {
             println!("Authentication fail limit reached, shutting down");
             on_max_failed_attempts();
-        }
-    }
-}
-
-impl AuthMonitorUpdate for AuthMonitor {
-    fn update<F: FnOnce()>(&mut self, on_max_failed_attempts: F) {
-        if self.should_reset_failed_attempts() {
-            self.reset_failed_attempts();
-        }
-        let mut failed_attempts = 0;
-        self.file_watcher.update(|line| {
-            if is_auth_failed_message(line) {
-                failed_attempts += 1;
-            }
-        });
-        if failed_attempts > 0 {
-            self.increase_failed_attempts(failed_attempts, on_max_failed_attempts);
         }
     }
 }

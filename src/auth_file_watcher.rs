@@ -73,7 +73,7 @@ impl AuthFileWatcher {
         self.reader = Some(reader);
     }
 
-    pub fn update<F: FnMut(&String)>(&mut self, parse_line: F) {
+    pub fn update(&mut self, parse_line: impl FnMut(&String)) {
         let events = match self.inotify.read_events(&mut self.event_buffer) {
             Ok(events) => events,
             Err(error) => {

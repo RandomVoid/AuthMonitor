@@ -9,7 +9,7 @@ use signal_hook::consts::{SIGABRT, SIGINT};
 use signal_hook::iterator::Signals;
 
 use crate::arguments::parse_arguments;
-use crate::auth_monitor::{AuthMonitor, AuthMonitorParams, AuthMonitorUpdate};
+use crate::auth_monitor::{AuthMonitor, AuthMonitorParams};
 
 mod arguments;
 mod auth_file_reader;

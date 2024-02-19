@@ -21,7 +21,7 @@ impl AuthFileReader {
         return Ok(());
     }
 
-    pub fn read_new_lines<F: FnMut(&String)>(&mut self, mut parse_line: F) {
+    pub fn read_new_lines(&mut self, mut parse_line: impl FnMut(&String)) {
         loop {
             self.file_content_buffer.clear();
             let bytes_read = self
