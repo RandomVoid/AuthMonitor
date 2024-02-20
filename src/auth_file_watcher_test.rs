@@ -66,22 +66,25 @@ impl Drop for TestFile {
 }
 
 #[test]
-fn file_not_exist() {
+fn when_monitored_file_does_not_exist_then_new_does_not_return_error() {
     let filepath_buffer = temp_dir().join("auth-monitor-non-existing-file.log");
     let filepath = filepath_buffer.to_str().expect("Error creating filepath");
     AuthFileWatcher::new(filepath).expect("Error creating AuthFileWatcher");
 }
 
 #[test]
-fn update_callback_is_called_when_new_line_is_added_to_file() {
+fn when_new_line_is_added_to_file_then_update_callback_is_called() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
     expect_no_update_callback_call(&mut auth_file_watcher);
-    test_file_modification(&mut file, &mut auth_file_watcher);
+    expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
 }
 
-fn test_file_modification(file: &mut TestFile, auth_file_watcher: &mut AuthFileWatcher) {
+fn expect_update_callback_is_called_when_file_is_modified(
+    file: &mut TestFile,
+    auth_file_watcher: &mut AuthFileWatcher,
+) {
     let mut call_count = 0;
     for i in 0..10 {
         let message = AUTH_FAILED_MESSAGES[i % AUTH_FAILED_MESSAGES.len()];
@@ -101,7 +104,7 @@ fn create_log_line(message: &str) -> String {
 }
 
 #[test]
-fn update_callback_is_called_for_each_line_added_to_file() {
+fn when_more_than_one_line_is_added_then_update_callback_is_called_for_each_line() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
@@ -127,7 +130,7 @@ fn update_callback_is_called_for_each_line_added_to_file() {
 }
 
 #[test]
-fn new_file_was_created_after_old_was_deleted() {
+fn when_new_file_was_created_after_old_was_deleted_then_changes_in_new_file_are_monitored() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
@@ -139,7 +142,7 @@ fn new_file_was_created_after_old_was_deleted() {
     file.create();
     expect_no_update_callback_call(&mut auth_file_watcher);
 
-    test_file_modification(&mut file, &mut auth_file_watcher);
+    expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
 }
 
 fn expect_no_update_callback_call(auth_file_watcher: &mut AuthFileWatcher) {
@@ -149,7 +152,7 @@ fn expect_no_update_callback_call(auth_file_watcher: &mut AuthFileWatcher) {
 }
 
 #[test]
-fn new_file_was_created_after_old_was_renamed() {
+fn when_new_file_has_been_created_after_old_was_renamed_then_changes_in_new_file_are_monitored() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
@@ -161,7 +164,7 @@ fn new_file_was_created_after_old_was_renamed() {
     file.create();
     expect_no_update_callback_call(&mut auth_file_watcher);
 
-    test_file_modification(&mut file, &mut auth_file_watcher);
+    expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
 }
 
 fn rename_file(filepath: &str, new_filename: &str) {
@@ -175,7 +178,7 @@ fn rename_file(filepath: &str, new_filename: &str) {
 }
 
 #[test]
-fn new_file_was_created_after_old_was_truncated() {
+fn when_monitored_file_has_been_truncated_then_changes_are_still_monitored() {
     let mut file = TestFile::new("auth-monitor-test");
     let mut auth_file_watcher =
         AuthFileWatcher::new(&file.filepath).expect("Error creating AuthFileWatcher");
@@ -184,5 +187,5 @@ fn new_file_was_created_after_old_was_truncated() {
     file.truncate();
     expect_no_update_callback_call(&mut auth_file_watcher);
 
-    test_file_modification(&mut file, &mut auth_file_watcher);
+    expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
 }
