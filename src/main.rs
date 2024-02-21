@@ -8,13 +8,13 @@ use std::{env, process, thread};
 use signal_hook::consts::{SIGABRT, SIGINT};
 use signal_hook::iterator::Signals;
 
-use crate::arguments::parse_arguments;
-use crate::auth_monitor::{AuthMonitor, AuthMonitorParams};
+use crate::auth_monitor::AuthMonitor;
+use crate::auth_monitor_params::AuthMonitorParams;
 
-mod arguments;
 mod auth_file_reader;
 mod auth_file_watcher;
 mod auth_monitor;
+mod auth_monitor_params;
 mod file_event_filter;
 mod file_path;
 mod message_parser;
@@ -23,7 +23,7 @@ const SLEEP_DURATION: Duration = Duration::from_millis(500);
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = env::args().skip(1).collect();
-    let params = match parse_arguments(&arguments) {
+    let params = match AuthMonitorParams::from_arguments(&arguments) {
         Ok(params) => params,
         Err(error) => {
             eprintln!("Invalid arguments: {}", error);

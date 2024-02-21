@@ -1,35 +1,9 @@
 use std::error::Error;
-use std::fmt::{Display, Formatter};
 use std::time::{Duration, SystemTime};
 
 use crate::auth_file_watcher::AuthFileWatcher;
+use crate::auth_monitor_params::AuthMonitorParams;
 use crate::message_parser::is_auth_failed_message;
-
-pub struct AuthMonitorParams {
-    pub filepath: String,
-    pub max_failed_attempts: i32,
-    pub reset_after_seconds: i32,
-}
-
-impl Default for AuthMonitorParams {
-    fn default() -> Self {
-        return AuthMonitorParams {
-            filepath: String::new(),
-            max_failed_attempts: 3,
-            reset_after_seconds: 1800,
-        };
-    }
-}
-
-impl Display for AuthMonitorParams {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        return write!(
-            formatter,
-            "filepath={}, max_failed_attempts={}, reset_after_seconds={}",
-            self.filepath, self.max_failed_attempts, self.reset_after_seconds
-        );
-    }
-}
 
 pub struct AuthMonitor {
     failed_attempts: i32,
@@ -41,12 +15,7 @@ pub struct AuthMonitor {
 
 impl AuthMonitor {
     pub fn new(params: AuthMonitorParams) -> Result<AuthMonitor, Box<dyn Error>> {
-        if params.max_failed_attempts <= 0 {
-            return Err("max-failed-attempts must be greater than 0")?;
-        }
-        if params.reset_after_seconds <= 0 {
-            return Err("reset-after-seconds must be greater than 0")?;
-        }
+        params.validate()?;
         return Ok(AuthMonitor {
             failed_attempts: 0,
             max_failed_attempts: params.max_failed_attempts,
