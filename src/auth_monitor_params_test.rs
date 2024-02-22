@@ -7,19 +7,60 @@ use crate::auth_monitor_params::{
 const FILEPATH: &str = "/var/log/auth.log";
 const ALL_OPTIONS: [&str; 2] = [MAX_FAILED_ATTEMPTS_OPTION, RESET_AFTER_SECONDS_OPTION];
 
+type AuthMonitorResult = Result<AuthMonitorParams, Box<dyn Error>>;
+
 #[test]
-fn when_parsing_no_arguments_then_return_error() {
-    expect_error(
-        AuthMonitorParams::from_arguments(&[]),
-        "File path not specified",
-    );
+fn when_parsing_no_arguments_then_return_file_not_specified_error() {
+    expect_file_not_specified_error(AuthMonitorParams::from_arguments(&[]));
 }
 
-fn expect_error(result: Result<AuthMonitorParams, Box<dyn Error>>, expected: &str) {
+fn expect_file_not_specified_error(result: AuthMonitorResult) {
+    expect_error(result, "File path not specified");
+}
+
+fn expect_error(result: AuthMonitorResult, expected: &str) {
     match result {
         Ok(_) => panic!("Error \"{}\" was expected", expected),
         Err(error) => assert_eq!(error.to_string(), expected),
     }
+}
+
+#[test]
+fn when_parsing_one_option_without_filepath_then_return_file_not_specified_error() {
+    for option in ALL_OPTIONS.map(format_example_option) {
+        let arguments = [option];
+        expect_file_not_specified_error(AuthMonitorParams::from_arguments(&arguments));
+    }
+}
+
+#[test]
+fn when_parsing_multiple_options_without_filepath_then_return_file_not_specified_error() {
+    let arguments = ALL_OPTIONS.map(format_example_option);
+    expect_file_not_specified_error(AuthMonitorParams::from_arguments(&arguments));
+}
+
+fn format_example_option(option: &str) -> String {
+    return format!("--{}={}", option, 10);
+}
+
+#[test]
+fn when_parsing_filepath_passed_more_than_once_then_return_file_path_specified_more_than_once_error(
+) {
+    let arguments_without_options = [String::from(FILEPATH), String::from(FILEPATH)];
+    expect_file_path_specified_more_than_once_error(AuthMonitorParams::from_arguments(
+        &arguments_without_options,
+    ));
+
+    let mut options = Vec::from(ALL_OPTIONS.map(format_example_option));
+    let mut arguments_with_options = Vec::from(arguments_without_options);
+    arguments_with_options.append(&mut options);
+    expect_file_path_specified_more_than_once_error(AuthMonitorParams::from_arguments(
+        &arguments_with_options,
+    ));
+}
+
+fn expect_file_path_specified_more_than_once_error(result: AuthMonitorResult) {
+    expect_error(result, "File path specified more than once");
 }
 
 #[test]
@@ -73,7 +114,7 @@ fn when_parsing_filepath_with_one_option_with_correct_value_then_return_params_w
 }
 
 #[test]
-fn when_parsing_option_without_value_then_return_error() {
+fn when_parsing_option_without_value_then_return_missing_option_value_error() {
     for option in ALL_OPTIONS {
         let option_arguments = [format!("--{}", option), format!("--{}=", option)];
         for option_argument in option_arguments {
@@ -85,13 +126,36 @@ fn when_parsing_option_without_value_then_return_error() {
 }
 
 #[test]
-fn when_parsing_option_with_invalid_value_then_return_error() {
+fn when_parsing_option_with_invalid_value_then_return_invalid_option_value_error() {
     for option in ALL_OPTIONS {
         let values = ["test", "3a", "--", "b23", "12@"];
         for value in values {
             let option_argument = format!("--{}={}", option, value);
             let arguments = [String::from(FILEPATH), option_argument];
             let expected = format!("\"{}\" is not a valid value for option --{}", value, option);
+            expect_error(AuthMonitorParams::from_arguments(&arguments), &expected);
+        }
+    }
+}
+
+#[test]
+fn when_parsing_option_with_no_value_then_return_no_value_error() {
+    for option in ALL_OPTIONS {
+        let option_argument = format!("--{}=", option);
+        let arguments = [String::from(FILEPATH), option_argument];
+        let expected = format!("Missing value for option --{}", option);
+        expect_error(AuthMonitorParams::from_arguments(&arguments), &expected);
+    }
+}
+
+#[test]
+fn when_parsing_option_with_value_less_than_0_then_invalid_value_error() {
+    let invalid_values = [0, -1, -1024, i32::MIN];
+    for option in ALL_OPTIONS {
+        for value in invalid_values {
+            let option_argument = format!("--{}={}", option, value);
+            let arguments = [String::from(FILEPATH), option_argument];
+            let expected = format!("{} must be greater than 0", option);
             expect_error(AuthMonitorParams::from_arguments(&arguments), &expected);
         }
     }
@@ -112,4 +176,18 @@ fn when_parsing_filename_and_multiple_options_then_return_params_with_parsed_val
         reset_after_seconds,
     };
     expect_equals(AuthMonitorParams::from_arguments(&arguments), &expected);
+}
+
+#[test]
+fn when_parsing_unknown_option_then_return_unknown_option_error() {
+    for option in [
+        "--no-value",
+        "--u=",
+        "--unknown=10",
+        "--unknown-option=test",
+    ] {
+        let arguments = [String::from(FILEPATH), String::from(option)];
+        let expected = format!("Unknown option {}", option);
+        expect_error(AuthMonitorParams::from_arguments(&arguments), &expected)
+    }
 }
