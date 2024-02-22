@@ -7,7 +7,7 @@ pub struct FilePath {
 }
 
 impl FilePath {
-    pub fn parse(filepath: &str) -> Result<FilePath, Box<dyn Error>> {
+    pub fn from(filepath: &str) -> Result<FilePath, Box<dyn Error>> {
         let full_path = Path::new(filepath);
         return Ok(FilePath {
             directory: Self::get_directory(full_path)?,

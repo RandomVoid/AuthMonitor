@@ -23,7 +23,7 @@ impl AuthFileWatcher {
         let FilePath {
             directory,
             filename,
-        } = FilePath::parse(filepath)?;
+        } = FilePath::from(filepath)?;
         let inotify = Inotify::init()?;
         let directory_watch_mask = WatchMask::CREATE | WatchMask::DELETE | WatchMask::MOVED_FROM;
         inotify.watches().add(directory, directory_watch_mask)?;
