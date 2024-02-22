@@ -53,3 +53,7 @@ impl FilePath {
         return Ok(filename);
     }
 }
+
+#[cfg(test)]
+#[path = "./file_path_test.rs"]
+mod test;
