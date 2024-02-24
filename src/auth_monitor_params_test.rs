@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use crate::auth_monitor_options::AuthMonitorOptions;
 use crate::auth_monitor_params::{
     AuthMonitorParams, MAX_FAILED_ATTEMPTS_OPTION, RESET_AFTER_SECONDS_OPTION,
 };
@@ -80,11 +81,11 @@ fn expect_equals(result: Result<AuthMonitorParams, Box<dyn Error>>, expected: &A
         "File path does not match"
     );
     assert_eq!(
-        params.max_failed_attempts, expected.max_failed_attempts,
+        params.options.max_failed_attempts, expected.options.max_failed_attempts,
         "Max failed attempts does not match"
     );
     assert_eq!(
-        params.reset_after_seconds, expected.reset_after_seconds,
+        params.options.reset_after_seconds, expected.options.reset_after_seconds,
         "Reset after seconds does not match"
     );
 }
@@ -98,16 +99,18 @@ fn when_parsing_filepath_with_one_option_with_correct_value_then_return_params_w
         let arguments = [String::from(FILEPATH), option_argument];
         let max_failed_attempts = match option == MAX_FAILED_ATTEMPTS_OPTION {
             true => value,
-            false => default_params.max_failed_attempts,
+            false => default_params.options.max_failed_attempts,
         };
         let reset_after_seconds = match option == RESET_AFTER_SECONDS_OPTION {
             true => value,
-            false => default_params.reset_after_seconds,
+            false => default_params.options.reset_after_seconds,
         };
         let expected = AuthMonitorParams {
             filepath: String::from(FILEPATH),
-            max_failed_attempts,
-            reset_after_seconds,
+            options: AuthMonitorOptions {
+                max_failed_attempts,
+                reset_after_seconds,
+            },
         };
         expect_equals(AuthMonitorParams::from_arguments(&arguments), &expected);
     }
@@ -172,8 +175,10 @@ fn when_parsing_filename_and_multiple_options_then_return_params_with_parsed_val
     ];
     let expected = AuthMonitorParams {
         filepath: String::from(FILEPATH),
-        max_failed_attempts,
-        reset_after_seconds,
+        options: AuthMonitorOptions {
+            max_failed_attempts,
+            reset_after_seconds,
+        },
     };
     expect_equals(AuthMonitorParams::from_arguments(&arguments), &expected);
 }

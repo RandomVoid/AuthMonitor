@@ -2,6 +2,8 @@ use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use crate::auth_monitor_options::AuthMonitorOptions;
+
 const OPTION_PREFIX: &str = "--";
 const OPTION_PREFIX_LENGTH: usize = OPTION_PREFIX.len();
 
@@ -11,13 +13,9 @@ const OPTION_VALUE_SEPARATOR_LENGTH: usize = 1;
 const MAX_FAILED_ATTEMPTS_OPTION: &str = "max-failed-attempts";
 const RESET_AFTER_SECONDS_OPTION: &str = "reset-after-seconds";
 
-const MAX_FAILED_ATTEMPTS: i32 = 3;
-const RESET_AFTER_SECONDS: i32 = 1800;
-
 pub struct AuthMonitorParams {
     pub filepath: String,
-    pub max_failed_attempts: i32,
-    pub reset_after_seconds: i32,
+    pub options: AuthMonitorOptions,
 }
 
 impl AuthMonitorParams {
@@ -42,11 +40,11 @@ impl AuthMonitorParams {
             };
             match &option_name[OPTION_PREFIX_LENGTH..] {
                 MAX_FAILED_ATTEMPTS_OPTION => {
-                    params.max_failed_attempts =
+                    params.options.max_failed_attempts =
                         Self::parse_option_value(option_name, option_value)?;
                 }
                 RESET_AFTER_SECONDS_OPTION => {
-                    params.reset_after_seconds =
+                    params.options.reset_after_seconds =
                         Self::parse_option_value(option_name, option_value)?;
                 }
                 _ => Err(format!("Unknown option {}", argument))?,
@@ -82,13 +80,13 @@ impl AuthMonitorParams {
         if self.filepath.is_empty() {
             Err("File path not specified")?;
         }
-        if self.max_failed_attempts <= 0 {
+        if self.options.max_failed_attempts <= 0 {
             return Err(format!(
                 "{} must be greater than 0",
                 MAX_FAILED_ATTEMPTS_OPTION
             ))?;
         }
-        if self.reset_after_seconds <= 0 {
+        if self.options.reset_after_seconds <= 0 {
             return Err(format!(
                 "{} must be greater than 0",
                 RESET_AFTER_SECONDS_OPTION
@@ -102,8 +100,7 @@ impl Default for AuthMonitorParams {
     fn default() -> Self {
         return AuthMonitorParams {
             filepath: String::new(),
-            max_failed_attempts: MAX_FAILED_ATTEMPTS,
-            reset_after_seconds: RESET_AFTER_SECONDS,
+            options: AuthMonitorOptions::default(),
         };
     }
 }
@@ -112,8 +109,8 @@ impl Display for AuthMonitorParams {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
         return write!(
             formatter,
-            "filepath={}, max_failed_attempts={}, reset_after_seconds={}",
-            self.filepath, self.max_failed_attempts, self.reset_after_seconds
+            "filepath={}, options: {}",
+            self.filepath, self.options
         );
     }
 }

@@ -14,6 +14,7 @@ use crate::auth_monitor_params::AuthMonitorParams;
 mod auth_file_reader;
 mod auth_file_watcher;
 mod auth_monitor;
+mod auth_monitor_options;
 mod auth_monitor_params;
 mod file_event_filter;
 mod file_path;
