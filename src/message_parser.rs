@@ -17,5 +17,5 @@ fn find_pam_prefix_end(message: &str) -> Option<usize> {
 }
 
 #[cfg(test)]
-#[path = "./message_parser_test.rs"]
+#[path = "./message_parser.test.rs"]
 mod test;

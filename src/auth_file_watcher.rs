@@ -127,5 +127,5 @@ impl AuthFileWatcher {
 }
 
 #[cfg(test)]
-#[path = "./auth_file_watcher_test.rs"]
+#[path = "./auth_file_watcher.test.rs"]
 mod test;

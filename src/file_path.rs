@@ -55,5 +55,5 @@ impl FilePath {
 }
 
 #[cfg(test)]
-#[path = "./file_path_test.rs"]
+#[path = "./file_path.test.rs"]
 mod test;
