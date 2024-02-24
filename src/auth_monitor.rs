@@ -2,9 +2,9 @@ use std::error::Error;
 use std::time::{Duration, SystemTime};
 
 use crate::auth_file_watcher::AuthFileWatcher;
+use crate::auth_message_parser::is_auth_failed_message;
 use crate::auth_monitor_options::AuthMonitorOptions;
 use crate::auth_monitor_params::AuthMonitorParams;
-use crate::message_parser::is_auth_failed_message;
 
 pub struct AuthMonitor {
     failed_attempts: i32,

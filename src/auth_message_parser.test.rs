@@ -1,4 +1,4 @@
-use crate::message_parser::is_auth_failed_message;
+use crate::auth_message_parser::is_auth_failed_message;
 
 #[test]
 fn when_message_is_auth_failed_message_then_returns_true() {

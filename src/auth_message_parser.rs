@@ -12,5 +12,5 @@ pub fn is_auth_failed_message(message: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "./message_parser.test.rs"]
+#[path = "./auth_message_parser.test.rs"]
 mod test;
