@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use crate::assert_error;
 use crate::auth_monitor_options::AuthMonitorOptions;
 use crate::auth_monitor_params::{
     AuthMonitorParams, MAX_FAILED_ATTEMPTS_OPTION, RESET_AFTER_SECONDS_OPTION,
@@ -16,14 +17,7 @@ fn when_parsing_no_arguments_then_return_file_not_specified_error() {
 }
 
 fn expect_file_not_specified_error(result: AuthMonitorResult) {
-    expect_error(result, "File path not specified");
-}
-
-fn expect_error(result: AuthMonitorResult, expected: &str) {
-    match result {
-        Ok(_) => panic!("Error \"{}\" was expected", expected),
-        Err(error) => assert_eq!(error.to_string(), expected),
-    }
+    assert_error!(result, "File path not specified");
 }
 
 #[test]
@@ -61,7 +55,7 @@ fn when_parsing_filepath_passed_more_than_once_then_return_file_path_specified_m
 }
 
 fn expect_file_path_specified_more_than_once_error(result: AuthMonitorResult) {
-    expect_error(result, "File path specified more than once");
+    assert_error!(result, "File path specified more than once");
 }
 
 #[test]
@@ -123,7 +117,7 @@ fn when_parsing_option_without_value_then_return_missing_option_value_error() {
         for option_argument in option_arguments {
             let arguments = [String::from(FILEPATH), option_argument];
             let expected = format!("Missing value for option --{}", option);
-            expect_error(AuthMonitorParams::from_arguments(&arguments), &expected);
+            assert_error!(AuthMonitorParams::from_arguments(&arguments), expected);
         }
     }
 }
@@ -136,7 +130,7 @@ fn when_parsing_option_with_invalid_value_then_return_invalid_option_value_error
             let option_argument = format!("--{}={}", option, value);
             let arguments = [String::from(FILEPATH), option_argument];
             let expected = format!("\"{}\" is not a valid value for option --{}", value, option);
-            expect_error(AuthMonitorParams::from_arguments(&arguments), &expected);
+            assert_error!(AuthMonitorParams::from_arguments(&arguments), expected);
         }
     }
 }
@@ -147,7 +141,7 @@ fn when_parsing_option_with_no_value_then_return_no_value_error() {
         let option_argument = format!("--{}=", option);
         let arguments = [String::from(FILEPATH), option_argument];
         let expected = format!("Missing value for option --{}", option);
-        expect_error(AuthMonitorParams::from_arguments(&arguments), &expected);
+        assert_error!(AuthMonitorParams::from_arguments(&arguments), expected);
     }
 }
 
@@ -159,7 +153,7 @@ fn when_parsing_option_with_value_less_than_0_then_invalid_value_error() {
             let option_argument = format!("--{}={}", option, value);
             let arguments = [String::from(FILEPATH), option_argument];
             let expected = format!("{} must be greater than 0", option);
-            expect_error(AuthMonitorParams::from_arguments(&arguments), &expected);
+            assert_error!(AuthMonitorParams::from_arguments(&arguments), expected);
         }
     }
 }
@@ -193,6 +187,6 @@ fn when_parsing_unknown_option_then_return_unknown_option_error() {
     ] {
         let arguments = [String::from(FILEPATH), String::from(option)];
         let expected = format!("Unknown option {}", option);
-        expect_error(AuthMonitorParams::from_arguments(&arguments), &expected)
+        assert_error!(AuthMonitorParams::from_arguments(&arguments), expected)
     }
 }
