@@ -20,6 +20,9 @@ mod auth_monitor_params;
 mod file_event_filter;
 mod file_path;
 
+#[cfg(test)]
+mod test_utils;
+
 const SLEEP_DURATION: Duration = Duration::from_millis(500);
 
 fn main() -> ExitCode {

@@ -1,12 +1,11 @@
 use std::env::temp_dir;
-use std::fs::File;
-use std::fs::{remove_file, rename};
-use std::io::Write;
+use std::fs::rename;
 use std::path::Path;
 
 use chrono::Local;
 
 use crate::auth_file_watcher::AuthFileWatcher;
+use crate::test_utils::test_file::TestFile;
 
 const AUTH_FAILED_MESSAGES: [&str; 6] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
@@ -16,54 +15,6 @@ const AUTH_FAILED_MESSAGES: [&str; 6] = [
     "workstation CRON[9419]: pam_unix(cron:session): session closed for user root",
     "workstation PackageKit: uid 1000 is trying to obtain org.freedesktop.packagekit.system-sources-refresh auth (only_trusted:0)",
 ];
-
-struct TestFile {
-    pub filepath: String,
-    file: File,
-}
-
-impl TestFile {
-    pub fn new(prefix: &str) -> TestFile {
-        let filename = format!("{}-{}.log", prefix, Local::now().timestamp_micros());
-        let filepath_buffer = temp_dir().join(filename);
-        let filepath = filepath_buffer.to_str().expect("Error creating filepath");
-        println!("Creating test file: {}", filepath);
-        return TestFile {
-            filepath: String::from(filepath),
-            file: File::create(filepath).expect("Error creating test file"),
-        };
-    }
-
-    pub fn create(&mut self) {
-        println!("Creating test file: {}", &self.filepath);
-        self.file = File::create(&self.filepath).expect("Error creating test file");
-    }
-
-    pub fn write(&mut self, message: &str) {
-        let bytes_to_add = message.as_bytes();
-        let bytes_written = self
-            .file
-            .write(bytes_to_add)
-            .expect("Error writing to file");
-        assert_eq!(bytes_written, bytes_to_add.len());
-    }
-
-    pub fn truncate(&mut self) {
-        println!("Truncating test file: {}", self.filepath);
-        self.file.set_len(0).expect("Error truncating file");
-    }
-
-    pub fn remove(&mut self) {
-        println!("Removing test file: {}", self.filepath);
-        remove_file(&self.filepath).expect("Unable to remove test file");
-    }
-}
-
-impl Drop for TestFile {
-    fn drop(&mut self) {
-        self.remove();
-    }
-}
 
 #[test]
 fn when_monitored_file_does_not_exist_then_new_does_not_return_error() {
