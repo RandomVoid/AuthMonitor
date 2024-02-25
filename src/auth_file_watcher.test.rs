@@ -5,7 +5,7 @@ use chrono::Local;
 use crate::auth_file_watcher::AuthFileWatcher;
 use crate::test_utils::test_file::{rename_file, TestFile};
 
-const AUTH_FAILED_MESSAGES: [&str; 6] = [
+const TEST_MESSAGES: [&str; 6] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
     "workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname= uid=1000 euid=1000 tty= ruser= rhost=  user=john",
     "workstation dbus-daemon[1988]: [system] Failed to activate service 'org.bluez': timed out (service_start_timeout=25000ms)",
@@ -36,7 +36,7 @@ fn expect_update_callback_is_called_when_file_is_modified(
 ) {
     let mut call_count = 0;
     for i in 0..10 {
-        let message = AUTH_FAILED_MESSAGES[i % AUTH_FAILED_MESSAGES.len()];
+        let message = TEST_MESSAGES[i % TEST_MESSAGES.len()];
         let line_to_add = create_log_line(message);
         file.write(&line_to_add);
         auth_file_watcher.update(|line| {
@@ -61,7 +61,7 @@ fn when_more_than_one_line_is_added_then_update_callback_is_called_for_each_line
 
     let mut call_count = 0;
     for i in 0..10 {
-        let lines_to_add = AUTH_FAILED_MESSAGES.map(create_log_line);
+        let lines_to_add = TEST_MESSAGES.map(create_log_line);
         for line in &lines_to_add {
             file.write(line)
         }
