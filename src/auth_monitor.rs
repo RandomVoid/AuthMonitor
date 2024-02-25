@@ -70,3 +70,7 @@ impl AuthMonitor {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "./auth_monitor.test.rs"]
+mod test;
