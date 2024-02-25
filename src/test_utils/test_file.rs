@@ -62,3 +62,8 @@ pub fn rename_file(filepath: &str, new_filename: &str) {
     let new_filepath = new_path.to_str().expect("Unable to build file path");
     rename(filepath, new_filepath).expect("Unable to rename test file");
 }
+
+pub fn create_log_line(message: &str) -> String {
+    let date_time = Local::now().format("%+");
+    return format!("{} {}\n", date_time, message);
+}

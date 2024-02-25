@@ -1,9 +1,7 @@
 use std::env::temp_dir;
 
-use chrono::Local;
-
 use crate::auth_file_watcher::AuthFileWatcher;
-use crate::test_utils::test_file::{rename_file, TestFile};
+use crate::test_utils::test_file::{create_log_line, rename_file, TestFile};
 
 const TEST_MESSAGES: [&str; 6] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
@@ -45,11 +43,6 @@ fn expect_update_callback_is_called_when_file_is_modified(
         });
         assert_eq!(call_count, i + 1, "Callback call was expected");
     }
-}
-
-fn create_log_line(message: &str) -> String {
-    let date_time = Local::now().format("%+");
-    return format!("{} {}\n", date_time, message);
 }
 
 #[test]
