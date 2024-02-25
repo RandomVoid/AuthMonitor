@@ -1,6 +1,7 @@
 use std::env::temp_dir;
-use std::fs::{remove_file, File};
+use std::fs::{remove_file, rename, File};
 use std::io::Write;
+use std::path::Path;
 
 use chrono::Local;
 
@@ -50,4 +51,14 @@ impl Drop for TestFile {
     fn drop(&mut self) {
         self.remove();
     }
+}
+
+pub fn rename_file(filepath: &str, new_filename: &str) {
+    println!("Renaming test file {} to {}", filepath, new_filename);
+    let new_path = Path::new(&filepath)
+        .parent()
+        .expect("Unable to get directory")
+        .join(new_filename);
+    let new_filepath = new_path.to_str().expect("Unable to build file path");
+    rename(filepath, new_filepath).expect("Unable to rename test file");
 }

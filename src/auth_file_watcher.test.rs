@@ -1,11 +1,9 @@
 use std::env::temp_dir;
-use std::fs::rename;
-use std::path::Path;
 
 use chrono::Local;
 
 use crate::auth_file_watcher::AuthFileWatcher;
-use crate::test_utils::test_file::TestFile;
+use crate::test_utils::test_file::{rename_file, TestFile};
 
 const AUTH_FAILED_MESSAGES: [&str; 6] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
@@ -116,16 +114,6 @@ fn when_new_file_has_been_created_after_old_was_renamed_then_changes_in_new_file
     expect_no_update_callback_call(&mut auth_file_watcher);
 
     expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
-}
-
-fn rename_file(filepath: &str, new_filename: &str) {
-    println!("Renaming test file {} to {}", filepath, new_filename);
-    let new_path = Path::new(&filepath)
-        .parent()
-        .expect("Unable to get directory")
-        .join(new_filename);
-    let new_filepath = new_path.to_str().expect("Unable to build file path");
-    rename(filepath, new_filepath).expect("Unable to rename test file");
 }
 
 #[test]
