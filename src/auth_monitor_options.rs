@@ -1,8 +1,5 @@
 use std::fmt::{Display, Formatter};
 
-const MAX_FAILED_ATTEMPTS: i32 = 3;
-const RESET_AFTER_SECONDS: i32 = 1800;
-
 pub struct AuthMonitorOptions {
     pub max_failed_attempts: i32,
     pub reset_after_seconds: i32,
@@ -11,8 +8,8 @@ pub struct AuthMonitorOptions {
 impl Default for AuthMonitorOptions {
     fn default() -> Self {
         return AuthMonitorOptions {
-            max_failed_attempts: MAX_FAILED_ATTEMPTS,
-            reset_after_seconds: RESET_AFTER_SECONDS,
+            max_failed_attempts: 3,
+            reset_after_seconds: 1800,
         };
     }
 }
