@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+#[derive(Copy, Clone)]
 pub struct AuthMonitorOptions {
     pub max_failed_attempts: i32,
     pub reset_after_seconds: i32,
