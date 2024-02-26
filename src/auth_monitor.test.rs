@@ -86,6 +86,10 @@ fn expect_update_callback_is_called_after_writing_auth_failed_message(
 ) {
     let message = create_log_line(AUTH_FAILED_TEST_MESSAGES[0]);
     file.write(&message);
+    expect_update_callback_is_called_once(auth_monitor);
+}
+
+fn expect_update_callback_is_called_once(auth_monitor: &mut AuthMonitor) {
     let mut call_count = 0;
     auth_monitor.update(|| call_count += 1);
     assert_eq!(call_count, 1, "One callback call was expected")
@@ -125,4 +129,41 @@ pub fn when_reset_after_seconds_passed_then_failed_attempts_count_is_reset() {
         &mut auth_monitor,
         &mut file,
     );
+}
+
+#[test]
+pub fn when_max_failed_attempts_limit_is_reached_before_update_is_called_then_update_callback_is_called(
+) {
+    for max_failed_attempts in 2..10 {
+        let mut file = TestFile::new("auth-monitor");
+        let mut auth_monitor = AuthMonitor::new(AuthMonitorParams {
+            filepath: file.filepath.clone(),
+            options: AuthMonitorOptions {
+                max_failed_attempts,
+                ..AuthMonitorOptions::default()
+            },
+        })
+        .expect("Error creating AuthMonitor");
+
+        expect_no_update_callback_call(&mut auth_monitor);
+        write_auth_failed_messages(&mut file, (max_failed_attempts + 1) as usize);
+        write_other_messages(&mut file, max_failed_attempts as usize);
+        expect_update_callback_is_called_once(&mut auth_monitor);
+    }
+}
+
+fn write_auth_failed_messages(file: &mut TestFile, count: usize) {
+    write_messages(file, &AUTH_FAILED_TEST_MESSAGES, count);
+}
+
+fn write_other_messages(file: &mut TestFile, count: usize) {
+    write_messages(file, &OTHER_TEST_MESSAGES, count);
+}
+
+fn write_messages(file: &mut TestFile, messages: &[&str], count: usize) {
+    for i in 0usize..(count - 1) {
+        let message_index = i % messages.len();
+        let message = create_log_line(messages[message_index]);
+        file.write(&message);
+    }
 }
