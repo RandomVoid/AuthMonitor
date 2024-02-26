@@ -30,8 +30,8 @@ pub fn when_max_failed_attempts_limit_is_reached_then_update_callback_is_called(
             },
         })
         .expect("Error creating AuthMonitor");
-        auth_monitor.update(|| panic!("Callback call was not expected"));
 
+        expect_no_update_callback_call(&mut auth_monitor);
         expect_update_callback_is_not_called_after_writing_auth_failed_messages(
             &mut auth_monitor,
             &mut file,
@@ -50,6 +50,12 @@ pub fn when_max_failed_attempts_limit_is_reached_then_update_callback_is_called(
     }
 }
 
+fn expect_no_update_callback_call(auth_monitor: &mut AuthMonitor) {
+    auth_monitor.update(|| {
+        panic!("Callback call was not expected");
+    });
+}
+
 fn expect_update_callback_is_not_called_after_writing_auth_failed_messages(
     auth_monitor: &mut AuthMonitor,
     file: &mut TestFile,
@@ -59,7 +65,7 @@ fn expect_update_callback_is_not_called_after_writing_auth_failed_messages(
         let message_index = i % AUTH_FAILED_TEST_MESSAGES.len();
         let message = create_log_line(AUTH_FAILED_TEST_MESSAGES[message_index]);
         file.write(&message);
-        auth_monitor.update(|| panic!("Callback call was not expected"));
+        expect_no_update_callback_call(auth_monitor);
     }
 }
 
@@ -70,7 +76,7 @@ fn expect_update_callback_is_not_called_after_writing_other_messages(
     for other_message in OTHER_TEST_MESSAGES {
         let message = create_log_line(other_message);
         file.write(&message);
-        auth_monitor.update(|| panic!("Callback call was not expected"));
+        expect_no_update_callback_call(auth_monitor);
     }
 }
 
@@ -97,8 +103,8 @@ pub fn when_reset_after_seconds_passed_then_failed_attempts_count_is_reset() {
         options,
     })
     .expect("Error creating AuthMonitor");
-    auth_monitor.update(|| panic!("Callback call was not expected"));
 
+    expect_no_update_callback_call(&mut auth_monitor);
     expect_update_callback_is_not_called_after_writing_auth_failed_messages(
         &mut auth_monitor,
         &mut file,
