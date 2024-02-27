@@ -1,7 +1,6 @@
 use std::env::temp_dir;
 use std::fs::{remove_file, rename, File};
 use std::io::Write;
-use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use chrono::Local;
@@ -59,6 +58,12 @@ impl TestFile {
         self.file.set_len(0).expect("Error truncating file");
     }
 
+    pub fn rename(&mut self, new_path: &str) {
+        println!("Renaming test file {} to {}", self.path, new_path);
+        rename(&self.path, new_path).expect("Unable to rename test file");
+        self.path = String::from(new_path);
+    }
+
     pub fn remove(&mut self) {
         println!("Removing test file: {}", self.path);
         remove_file(&self.path).expect("Unable to remove test file");
@@ -69,16 +74,6 @@ impl Drop for TestFile {
     fn drop(&mut self) {
         self.remove();
     }
-}
-
-pub fn rename_file(filepath: &str, new_filename: &str) {
-    println!("Renaming test file {} to {}", filepath, new_filename);
-    let new_path = Path::new(&filepath)
-        .parent()
-        .expect("Unable to get directory")
-        .join(new_filename);
-    let new_filepath = new_path.to_str().expect("Unable to build file path");
-    rename(filepath, new_filepath).expect("Unable to rename test file");
 }
 
 pub fn create_log_line(message: &str) -> String {

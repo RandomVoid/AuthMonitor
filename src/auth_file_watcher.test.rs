@@ -1,7 +1,7 @@
 use std::env::temp_dir;
 
 use crate::auth_file_watcher::AuthFileWatcher;
-use crate::test_utils::test_file::{create_log_line, rename_file, TestFile};
+use crate::test_utils::test_file::{create_log_line, TestFile};
 
 const TEST_MESSAGES: [&str; 6] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
@@ -83,7 +83,6 @@ fn when_new_file_was_created_after_old_was_deleted_then_changes_in_new_file_are_
 
     file.create();
     expect_no_update_callback_call(&mut auth_file_watcher);
-
     expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
 }
 
@@ -96,17 +95,18 @@ fn expect_no_update_callback_call(auth_file_watcher: &mut AuthFileWatcher) {
 #[test]
 fn when_new_file_has_been_created_after_old_was_renamed_then_changes_in_new_file_are_monitored() {
     let mut file = TestFile::with_unique_name();
+    let filepath = String::from(file.path());
     let mut auth_file_watcher =
-        AuthFileWatcher::new(file.path()).expect("Error creating AuthFileWatcher");
+        AuthFileWatcher::new(&filepath).expect("Error creating AuthFileWatcher");
     expect_no_update_callback_call(&mut auth_file_watcher);
 
-    rename_file(file.path(), "auth-monitor-test.bak");
+    let new_filepath = format!("{}.bak", file.path());
+    file.rename(&new_filepath);
     expect_no_update_callback_call(&mut auth_file_watcher);
 
-    file.create();
+    let mut new_file = TestFile::new(&filepath);
     expect_no_update_callback_call(&mut auth_file_watcher);
-
-    expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
+    expect_update_callback_is_called_when_file_is_modified(&mut new_file, &mut auth_file_watcher);
 }
 
 #[test]
@@ -118,6 +118,5 @@ fn when_monitored_file_has_been_truncated_then_changes_are_still_monitored() {
 
     file.truncate();
     expect_no_update_callback_call(&mut auth_file_watcher);
-
     expect_update_callback_is_called_when_file_is_modified(&mut file, &mut auth_file_watcher);
 }
