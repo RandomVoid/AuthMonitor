@@ -21,7 +21,7 @@ const OTHER_TEST_MESSAGES: [&str; 4] = [
 #[test]
 pub fn when_max_failed_attempts_limit_is_reached_then_update_callback_is_called() {
     for max_failed_attempts in 2..10 {
-        let mut file = TestFile::new("auth-monitor");
+        let mut file = TestFile::with_unique_name();
         let mut auth_monitor = AuthMonitor::new(AuthMonitorParams {
             filepath: file.filepath.clone(),
             options: AuthMonitorOptions {
@@ -101,7 +101,7 @@ pub fn when_reset_after_seconds_passed_then_failed_attempts_count_is_reset() {
         max_failed_attempts: 3,
         reset_after_seconds: 5,
     };
-    let mut file = TestFile::new("auth-monitor");
+    let mut file = TestFile::with_unique_name();
     let mut auth_monitor = AuthMonitor::new(AuthMonitorParams {
         filepath: file.filepath.clone(),
         options,
@@ -135,7 +135,7 @@ pub fn when_reset_after_seconds_passed_then_failed_attempts_count_is_reset() {
 pub fn when_max_failed_attempts_limit_is_reached_before_update_is_called_then_update_callback_is_called(
 ) {
     for max_failed_attempts in 2..10 {
-        let mut file = TestFile::new("auth-monitor");
+        let mut file = TestFile::with_unique_name();
         let mut auth_monitor = AuthMonitor::new(AuthMonitorParams {
             filepath: file.filepath.clone(),
             options: AuthMonitorOptions {

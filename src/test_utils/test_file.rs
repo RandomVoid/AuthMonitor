@@ -2,6 +2,7 @@ use std::env::temp_dir;
 use std::fs::{remove_file, rename, File};
 use std::io::Write;
 use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use chrono::Local;
 
@@ -11,14 +12,27 @@ pub struct TestFile {
 }
 
 impl TestFile {
-    pub fn new(prefix: &str) -> TestFile {
-        let filename = format!("{}-{}.log", prefix, Local::now().timestamp_micros());
+    pub fn with_unique_name() -> TestFile {
+        let filename = format!(
+            "auth-monitor-test-{}-{}.log",
+            Self::next_id(),
+            Local::now().timestamp_micros()
+        );
         let filepath_buffer = temp_dir().join(filename);
         let filepath = filepath_buffer.to_str().expect("Error creating filepath");
-        println!("Creating test file: {}", filepath);
+        return Self::new(filepath);
+    }
+
+    fn next_id() -> usize {
+        static ID: AtomicUsize = AtomicUsize::new(1);
+        return ID.fetch_add(1, Ordering::Relaxed);
+    }
+
+    pub fn new(path: &str) -> TestFile {
+        println!("Creating test file: {}", path);
         return TestFile {
-            filepath: String::from(filepath),
-            file: File::create(filepath).expect("Error creating test file"),
+            filepath: String::from(path),
+            file: File::create(path).expect("Error creating test file"),
         };
     }
 
