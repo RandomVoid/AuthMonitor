@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use chrono::Local;
 
 pub struct TestFile {
-    pub filepath: String,
+    path: String,
     file: File,
 }
 
@@ -18,9 +18,9 @@ impl TestFile {
             Self::next_id(),
             Local::now().timestamp_micros()
         );
-        let filepath_buffer = temp_dir().join(filename);
-        let filepath = filepath_buffer.to_str().expect("Error creating filepath");
-        return Self::new(filepath);
+        let path_buffer = temp_dir().join(filename);
+        let path = path_buffer.to_str().expect("Error creating file path");
+        return Self::new(path);
     }
 
     fn next_id() -> usize {
@@ -31,14 +31,18 @@ impl TestFile {
     pub fn new(path: &str) -> TestFile {
         println!("Creating test file: {}", path);
         return TestFile {
-            filepath: String::from(path),
+            path: String::from(path),
             file: File::create(path).expect("Error creating test file"),
         };
     }
 
+    pub fn path(&self) -> &str {
+        return &self.path;
+    }
+
     pub fn create(&mut self) {
-        println!("Creating test file: {}", &self.filepath);
-        self.file = File::create(&self.filepath).expect("Error creating test file");
+        println!("Creating test file: {}", &self.path);
+        self.file = File::create(&self.path).expect("Error creating test file");
     }
 
     pub fn write(&mut self, message: &str) {
@@ -51,13 +55,13 @@ impl TestFile {
     }
 
     pub fn truncate(&mut self) {
-        println!("Truncating test file: {}", self.filepath);
+        println!("Truncating test file: {}", self.path);
         self.file.set_len(0).expect("Error truncating file");
     }
 
     pub fn remove(&mut self) {
-        println!("Removing test file: {}", self.filepath);
-        remove_file(&self.filepath).expect("Unable to remove test file");
+        println!("Removing test file: {}", self.path);
+        remove_file(&self.path).expect("Unable to remove test file");
     }
 }
 
