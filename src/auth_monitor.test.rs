@@ -146,7 +146,7 @@ pub fn when_max_failed_attempts_limit_is_reached_before_update_is_called_then_up
         .expect("Error creating AuthMonitor");
 
         expect_no_update_callback_call(&mut auth_monitor);
-        write_auth_failed_messages(&mut file, (max_failed_attempts + 1) as usize);
+        write_auth_failed_messages(&mut file, max_failed_attempts as usize);
         write_other_messages(&mut file, max_failed_attempts as usize);
         expect_update_callback_is_called_once(&mut auth_monitor);
     }
@@ -161,7 +161,7 @@ fn write_other_messages(file: &mut TestFile, count: usize) {
 }
 
 fn write_messages(file: &mut TestFile, messages: &[&str], count: usize) {
-    for i in 0usize..(count - 1) {
+    for i in 0usize..count {
         let message_index = i % messages.len();
         let message = create_log_line(messages[message_index]);
         file.write(&message);
