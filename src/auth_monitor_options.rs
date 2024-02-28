@@ -9,7 +9,7 @@ pub struct AuthMonitorOptions {
 impl Default for AuthMonitorOptions {
     fn default() -> Self {
         return AuthMonitorOptions {
-            max_failed_attempts: 3,
+            max_failed_attempts: 5,
             reset_after_seconds: 1800,
         };
     }
