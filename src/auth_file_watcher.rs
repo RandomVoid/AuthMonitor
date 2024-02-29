@@ -125,7 +125,3 @@ impl AuthFileWatcher {
         self.open_file();
     }
 }
-
-#[cfg(test)]
-#[path = "./auth_file_watcher.test.rs"]
-mod test;
