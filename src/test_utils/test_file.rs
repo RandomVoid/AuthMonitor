@@ -5,6 +5,18 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use chrono::Local;
 
+const AUTH_FAILED_TEST_MESSAGES: [&str; 2] = [
+    "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
+    "workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname= uid=1000 euid=1000 tty= ruser= rhost=  user=john",
+];
+
+const OTHER_TEST_MESSAGES: [&str; 4] = [
+    "workstation dbus-daemon[1988]: [system] Failed to activate service 'org.bluez': timed out (service_start_timeout=25000ms)",
+    "workstation CRON[9419]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+    "workstation CRON[9419]: pam_unix(cron:session): session closed for user root",
+    "workstation PackageKit: uid 1000 is trying to obtain org.freedesktop.packagekit.system-sources-refresh auth (only_trusted:0)",
+];
+
 pub struct TestFile {
     path: String,
     file: File,
@@ -51,6 +63,30 @@ impl TestFile {
             .write(bytes_to_add)
             .expect("Error writing to file");
         assert_eq!(bytes_written, bytes_to_add.len());
+    }
+
+    pub fn write_auth_failed_messages(&mut self, count: usize) {
+        for i in 0usize..count {
+            self.write_auth_failed_message(i);
+        }
+    }
+
+    pub fn write_auth_failed_message(&mut self, index: usize) {
+        let message_index = index % AUTH_FAILED_TEST_MESSAGES.len();
+        let message = create_log_line(AUTH_FAILED_TEST_MESSAGES[message_index]);
+        self.write(&message);
+    }
+
+    pub fn write_other_messages(&mut self, count: usize) {
+        for i in 0usize..count {
+            self.write_other_message(i);
+        }
+    }
+
+    pub fn write_other_message(&mut self, index: usize) {
+        let message_index = index % OTHER_TEST_MESSAGES.len();
+        let message = create_log_line(OTHER_TEST_MESSAGES[message_index]);
+        self.write(&message);
     }
 
     pub fn truncate(&mut self) {
