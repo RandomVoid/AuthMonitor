@@ -56,15 +56,6 @@ impl TestFile {
         self.file = File::create(&self.path).expect("Error creating test file");
     }
 
-    pub fn write(&mut self, message: &str) {
-        let bytes_to_add = message.as_bytes();
-        let bytes_written = self
-            .file
-            .write(bytes_to_add)
-            .expect("Error writing to file");
-        assert_eq!(bytes_written, bytes_to_add.len());
-    }
-
     pub fn write_auth_failed_messages(&mut self, count: usize) {
         for i in 0usize..count {
             self.write_auth_failed_message(i);
@@ -73,8 +64,24 @@ impl TestFile {
 
     pub fn write_auth_failed_message(&mut self, index: usize) {
         let message_index = index % AUTH_FAILED_TEST_MESSAGES.len();
-        let message = create_log_line(AUTH_FAILED_TEST_MESSAGES[message_index]);
-        self.write(&message);
+        let message = AUTH_FAILED_TEST_MESSAGES[message_index];
+        self.write_log_message(message);
+    }
+
+    fn write_log_message(&mut self, message: &str) {
+        let date_time = Local::now().format("%+");
+        let line = format!("{} {}\n", date_time, message);
+        self.write(&line);
+    }
+
+    fn write(&mut self, message: &str) {
+        print!("Writing line: {}", message);
+        let bytes_to_add = message.as_bytes();
+        let bytes_written = self
+            .file
+            .write(bytes_to_add)
+            .expect("Error writing to file");
+        assert_eq!(bytes_written, bytes_to_add.len());
     }
 
     pub fn write_other_messages(&mut self, count: usize) {
@@ -85,8 +92,8 @@ impl TestFile {
 
     pub fn write_other_message(&mut self, index: usize) {
         let message_index = index % OTHER_TEST_MESSAGES.len();
-        let message = create_log_line(OTHER_TEST_MESSAGES[message_index]);
-        self.write(&message);
+        let message = OTHER_TEST_MESSAGES[message_index];
+        self.write_log_message(message);
     }
 
     pub fn truncate(&mut self) {
@@ -110,9 +117,4 @@ impl Drop for TestFile {
     fn drop(&mut self) {
         self.remove();
     }
-}
-
-pub fn create_log_line(message: &str) -> String {
-    let date_time = Local::now().format("%+");
-    return format!("{} {}\n", date_time, message);
 }
