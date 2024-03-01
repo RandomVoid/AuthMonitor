@@ -1,3 +1,4 @@
+use crate::assert_error;
 use crate::file_path::FilePath;
 
 #[test]
@@ -17,12 +18,9 @@ fn when_parsing_file_path_to_non_existing_file_then_return_no_such_file_error() 
         "/nonexistent/../path/../file.log",
     ];
     for path in paths {
-        match FilePath::from(path) {
-            Ok(_) => panic!("Error was expected"),
-            Err(error) => assert_eq!(
-                error.to_string(),
-                "Error parsing directory path: No such file or directory (os error 2)"
-            ),
-        };
+        assert_error!(
+            FilePath::from(path),
+            "Error parsing directory path: No such file or directory (os error 2)"
+        );
     }
 }
