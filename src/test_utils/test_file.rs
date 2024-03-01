@@ -43,7 +43,7 @@ impl TestFile {
 
     fn next_id() -> usize {
         static ID: AtomicUsize = AtomicUsize::new(1);
-        return ID.fetch_add(1, Ordering::Relaxed);
+        return ID.fetch_add(1, Ordering::SeqCst);
     }
 
     pub fn new(path: &str) -> TestFile {
