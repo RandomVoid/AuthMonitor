@@ -23,7 +23,14 @@ pub struct TestFile {
 }
 
 impl TestFile {
-    pub fn with_unique_name() -> TestFile {
+    pub fn not_empty() -> TestFile {
+        let mut file = Self::empty();
+        file.write_other_messages(5);
+        file.write_auth_failed_messages(5);
+        return file;
+    }
+
+    pub fn empty() -> TestFile {
         let filename = format!(
             "auth-monitor-test-{}-{}.log",
             Self::next_id(),

@@ -41,7 +41,7 @@ const MAX_FAILED_ATTEMPTS_TEST_RANGE: Range<i32> = 2..15;
 
 #[test]
 fn when_file_does_not_exist_then_changes_are_monitored_after_it_is_created() {
-    let mut file = TestFile::with_unique_name();
+    let mut file = TestFile::empty();
     file.remove();
 
     let options = AuthMonitorOptions::default();
@@ -62,7 +62,7 @@ fn when_file_does_not_exist_then_changes_are_monitored_after_it_is_created() {
 #[test]
 pub fn when_auth_failure_limit_is_reached_then_update_callback_is_invoked() {
     for max_failed_attempts in MAX_FAILED_ATTEMPTS_TEST_RANGE {
-        let mut file = TestFile::with_unique_name();
+        let mut file = TestFile::not_empty();
         let options = AuthMonitorOptions {
             max_failed_attempts,
             ..AuthMonitorOptions::default()
@@ -88,7 +88,7 @@ pub fn when_auth_failure_limit_is_reached_then_update_callback_is_invoked() {
 #[test]
 pub fn when_auth_failure_limit_is_reached_between_updates_then_next_update_invokes_callback() {
     for max_failed_attempts in MAX_FAILED_ATTEMPTS_TEST_RANGE {
-        let mut file = TestFile::with_unique_name();
+        let mut file = TestFile::not_empty();
         let options = AuthMonitorOptions {
             max_failed_attempts,
             ..AuthMonitorOptions::default()
@@ -105,7 +105,7 @@ pub fn when_auth_failure_limit_is_reached_between_updates_then_next_update_invok
 
 #[test]
 pub fn when_reset_time_has_passed_then_reset_failed_attempt_counter() {
-    let mut file = TestFile::with_unique_name();
+    let mut file = TestFile::not_empty();
     let options = AuthMonitorOptions {
         reset_after_seconds: 5,
         ..AuthMonitorOptions::default()
@@ -135,7 +135,7 @@ pub fn when_reset_time_has_passed_then_reset_failed_attempt_counter() {
 
 #[test]
 fn when_file_is_deleted_and_new_one_is_created_then_changes_are_still_monitored() {
-    let mut file = TestFile::with_unique_name();
+    let mut file = TestFile::not_empty();
     let options = AuthMonitorOptions::default();
     let mut test = AuthMonitorTest::new(file.path(), options);
     file.remove();
@@ -150,7 +150,7 @@ fn when_file_is_deleted_and_new_one_is_created_then_changes_are_still_monitored(
 
 #[test]
 fn when_file_is_renamed_and_new_one_is_created_then_changes_are_still_monitored() {
-    let mut file = TestFile::with_unique_name();
+    let mut file = TestFile::not_empty();
     let options = AuthMonitorOptions::default();
     let mut test = AuthMonitorTest::new(file.path(), options);
 
@@ -167,7 +167,7 @@ fn when_file_is_renamed_and_new_one_is_created_then_changes_are_still_monitored(
 
 #[test]
 fn when_file_is_truncated_then_changes_are_still_monitored() {
-    let mut file = TestFile::with_unique_name();
+    let mut file = TestFile::not_empty();
     file.write_other_messages(5);
 
     let options = AuthMonitorOptions::default();
