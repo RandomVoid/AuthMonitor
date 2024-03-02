@@ -47,20 +47,27 @@ fn main() -> ExitCode {
 fn start_monitoring(params: AuthMonitorParams) -> ExitCode {
     let mut auth_monitor = match AuthMonitor::new(params) {
         Ok(auth_monitor) => auth_monitor,
-        Err(e) => {
-            eprintln!("Error creating AuthMonitor: {}", e);
+        Err(error) => {
+            eprintln!("Error creating AuthMonitor: {}", error);
             return ExitCode::FAILURE;
         }
     };
-    let mut signals = Signals::new([SIGABRT, SIGINT]).unwrap();
+    let mut signals = match Signals::new([SIGABRT, SIGINT]) {
+        Ok(signals) => signals,
+        Err(error) => {
+            eprintln!("Error creating signals {}", error);
+            return ExitCode::FAILURE;
+        }
+    };
     loop {
         auth_monitor.update(shutdown);
-        let signal = signals.pending().next();
-        if signal.is_some() {
-            println!("Received signal {}, stopping...", signal.unwrap());
-            return ExitCode::SUCCESS;
+        match signals.pending().next() {
+            Some(signal) => {
+                println!("Received signal {}, stopping...", signal);
+                return ExitCode::SUCCESS;
+            }
+            None => thread::sleep(SLEEP_DURATION),
         }
-        thread::sleep(SLEEP_DURATION);
     }
 }
 
