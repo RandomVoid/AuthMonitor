@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "auth_monitor"
+name = "auth-monitor"
 version = "0.1.0"
 dependencies = [
  "chrono",
