@@ -1,0 +1,11 @@
+[Unit]
+Description=AuthMonitor
+
+[Service]
+EnvironmentFile=/etc/default/auth-monitor
+ExecStart=/usr/local/bin/auth-monitor ${LOG_FILE} --max-failed-attempts=${MAX_FAILED_ATTEMPTS} --reset-after-seconds=${RESET_AFTER_SECONDS}
+Restart=always
+User=auth-monitor
+
+[Install]
+WantedBy=multi-user.target
