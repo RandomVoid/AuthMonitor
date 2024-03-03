@@ -1,14 +1,41 @@
-const PAM_PREFIX: &str = "pam_unix";
-const PAM_PREFIX_LENGTH: usize = PAM_PREFIX.len();
-const AUTH_FAILURE_MESSAGE: &str = "authentication failure";
+pub struct AuthMessageParser {
+    patterns: Vec<AuthFailedMessagePattern>,
+}
 
-pub fn is_auth_failed_message(message: &str) -> bool {
-    return match message.find(PAM_PREFIX) {
-        None => false,
-        Some(pam_prefix_position) => {
-            message[pam_prefix_position + PAM_PREFIX_LENGTH..].contains(AUTH_FAILURE_MESSAGE)
+struct AuthFailedMessagePattern {
+    prefix: String,
+    message: String,
+}
+
+impl AuthMessageParser {
+    pub fn new() -> AuthMessageParser {
+        let pam_message = AuthFailedMessagePattern {
+            prefix: String::from("pam_unix"),
+            message: String::from("authentication failure"),
+        };
+        let unix_chkpwd_message = AuthFailedMessagePattern {
+            prefix: String::from("unix_chkpwd"),
+            message: String::from("password check failed"),
+        };
+        return AuthMessageParser {
+            patterns: vec![pam_message, unix_chkpwd_message],
+        };
+    }
+
+    pub fn is_auth_failed_message(&self, message: &str) -> bool {
+        for pattern in &self.patterns {
+            match message.find(&pattern.prefix) {
+                None => {}
+                Some(prefix_position) => {
+                    let message_after_prefix = &message[prefix_position + pattern.prefix.len()..];
+                    if message_after_prefix.contains(&pattern.message) {
+                        return true;
+                    }
+                }
+            };
         }
-    };
+        return false;
+    }
 }
 
 #[cfg(test)]

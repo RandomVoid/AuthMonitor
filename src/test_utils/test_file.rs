@@ -5,9 +5,10 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use chrono::Local;
 
-const AUTH_FAILED_TEST_MESSAGES: [&str; 2] = [
+pub const AUTH_FAILED_TEST_MESSAGES: [&str; 3] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
     "workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname= uid=1000 euid=1000 tty= ruser= rhost=  user=john",
+    "workstation unix_chkpwd[222793]: password check failed for user (john)"
 ];
 
 const OTHER_TEST_MESSAGES: [&str; 4] = [
