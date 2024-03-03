@@ -71,12 +71,12 @@ fn start_monitoring(params: AuthMonitorParams) -> ExitCode {
     }
 }
 
-const SYSTEMCTL_COMMAND: &str = "systemctl";
-const POWER_OFF_ARGS: [&str; 1] = ["poweroff"];
+const SUDO_COMMAND: &str = "sudo";
+const SYSTEMCTL_POWER_OFF_ARGS: [&str; 2] = ["systemctl", "poweroff"];
 
 fn shutdown() {
-    let output = match Command::new(SYSTEMCTL_COMMAND)
-        .args(POWER_OFF_ARGS)
+    let output = match Command::new(SUDO_COMMAND)
+        .args(SYSTEMCTL_POWER_OFF_ARGS)
         .output()
     {
         Ok(output) => output,
@@ -85,8 +85,16 @@ fn shutdown() {
             return;
         }
     };
-    match String::from_utf8(output.stdout) {
-        Ok(stdout) => println!("Shutdown output: {}", stdout),
+    let output_data = if output.status.success() {
+        output.stdout
+    } else {
+        output.stderr
+    };
+    if output_data.is_empty() {
+        return;
+    }
+    match String::from_utf8(output_data) {
+        Ok(output_message) => println!("Shutdown output: {}", output_message),
         Err(error) => eprintln!("Error converting command output to string: {}", error),
     };
 }
