@@ -1,13 +1,11 @@
-use crate::auth_message_parser::is_auth_failed_message;
+use crate::auth_message_parser::AuthMessageParser;
+use crate::test_utils::test_file::AUTH_FAILED_TEST_MESSAGES;
 
 #[test]
 fn when_message_is_auth_failed_message_then_returns_true() {
-    let messages = [
-        "2023-04-22T12:20:32.512681+02:00 workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
-        "2023-04-22T12:22:53.157054+02:00 workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname= uid=1000 euid=1000 tty= ruser= rhost=  user=john",
-    ];
-    for message in messages {
-        assert!(is_auth_failed_message(message));
+    let parser = AuthMessageParser::new();
+    for message in AUTH_FAILED_TEST_MESSAGES {
+        assert!(parser.is_auth_failed_message(message));
     }
 }
 
@@ -52,7 +50,8 @@ fn when_message_is_not_auth_failed_message_then_returns_false() {
 2024-02-10T14:34:24.371421+01:00 workstation sudo:   john : TTY=pts/3 ; PWD=/home/john ; USER=root ; COMMAND=/usr/bin/ls
 2024-02-10T14:34:24.372326+01:00 workstation sudo: pam_unix(sudo:session): session opened for user root(uid=0) by john(uid=1000)
 2024-02-10T14:34:24.374716+01:00 workstation sudo: pam_unix(sudo:session): session closed for user root";
+    let parser = AuthMessageParser::new();
     for message in messages.split('\n') {
-        assert!(!is_auth_failed_message(message));
+        assert!(!parser.is_auth_failed_message(message));
     }
 }

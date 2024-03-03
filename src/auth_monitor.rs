@@ -2,7 +2,7 @@ use std::error::Error;
 use std::time::{Duration, SystemTime};
 
 use crate::auth_file_watcher::AuthFileWatcher;
-use crate::auth_message_parser::is_auth_failed_message;
+use crate::auth_message_parser::AuthMessageParser;
 use crate::auth_monitor_options::AuthMonitorOptions;
 use crate::auth_monitor_params::AuthMonitorParams;
 
@@ -10,6 +10,7 @@ pub struct AuthMonitor {
     failed_attempts: i32,
     options: AuthMonitorOptions,
     file_watcher: AuthFileWatcher,
+    auth_message_parser: AuthMessageParser,
     last_failed_auth: SystemTime,
 }
 
@@ -20,6 +21,7 @@ impl AuthMonitor {
             failed_attempts: 0,
             options: params.options,
             file_watcher: AuthFileWatcher::new(&params.filepath)?,
+            auth_message_parser: AuthMessageParser::new(),
             last_failed_auth: SystemTime::UNIX_EPOCH,
         });
     }
@@ -30,7 +32,7 @@ impl AuthMonitor {
         }
         let mut failed_attempts = 0;
         self.file_watcher.update(|line| {
-            if is_auth_failed_message(line) {
+            if self.auth_message_parser.is_auth_failed_message(line) {
                 failed_attempts += 1;
             }
         });
