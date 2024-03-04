@@ -19,7 +19,7 @@ impl Display for AuthMonitorOptions {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
         return write!(
             formatter,
-            "max_failed_attempts={}, reset_after_seconds={}",
+            "max-failed-attempts={}, reset-after-seconds={}",
             self.max_failed_attempts, self.reset_after_seconds
         );
     }
