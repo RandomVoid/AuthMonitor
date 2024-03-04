@@ -3,7 +3,7 @@
 
 use std::process::{Command, ExitCode};
 use std::time::Duration;
-use std::{env, process, thread};
+use std::{env, thread};
 
 use signal_hook::consts::{SIGABRT, SIGINT};
 use signal_hook::iterator::Signals;
@@ -34,11 +34,7 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    println!(
-        "Monitoring process {} started with parameters {}",
-        process::id(),
-        params,
-    );
+    println!("Monitoring process started with parameters {}", params);
     let exit_code = start_monitoring(params);
     println!("Monitoring process stopped");
     return exit_code;
@@ -55,7 +51,7 @@ fn start_monitoring(params: AuthMonitorParams) -> ExitCode {
     let mut signals = match Signals::new([SIGABRT, SIGINT]) {
         Ok(signals) => signals,
         Err(error) => {
-            eprintln!("Error creating signals {}", error);
+            eprintln!("Error creating signals: {}", error);
             return ExitCode::FAILURE;
         }
     };
@@ -63,7 +59,7 @@ fn start_monitoring(params: AuthMonitorParams) -> ExitCode {
         auth_monitor.update(shutdown);
         match signals.pending().next() {
             Some(signal) => {
-                println!("Received signal {}, stopping...", signal);
+                println!("Received signal {}", signal);
                 return ExitCode::SUCCESS;
             }
             None => thread::sleep(SLEEP_DURATION),
