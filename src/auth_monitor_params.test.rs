@@ -41,17 +41,12 @@ fn format_example_option(option: &str) -> String {
 #[test]
 fn when_parsing_filepath_passed_more_than_once_then_return_file_path_specified_more_than_once_error(
 ) {
-    let arguments_without_options = [String::from(FILEPATH), String::from(FILEPATH)];
-    expect_file_path_specified_more_than_once_error(AuthMonitorParams::from_arguments(
-        &arguments_without_options,
-    ));
+    let mut arguments = vec![String::from(FILEPATH), String::from(FILEPATH)];
+    expect_file_path_specified_more_than_once_error(AuthMonitorParams::from_arguments(&arguments));
 
-    let mut options = Vec::from(ALL_OPTIONS.map(format_example_option));
-    let mut arguments_with_options = Vec::from(arguments_without_options);
-    arguments_with_options.append(&mut options);
-    expect_file_path_specified_more_than_once_error(AuthMonitorParams::from_arguments(
-        &arguments_with_options,
-    ));
+    let options = ALL_OPTIONS.map(format_example_option);
+    arguments.extend_from_slice(&options);
+    expect_file_path_specified_more_than_once_error(AuthMonitorParams::from_arguments(&arguments));
 }
 
 fn expect_file_path_specified_more_than_once_error(result: AuthMonitorResult) {
@@ -179,12 +174,13 @@ fn when_parsing_filename_and_multiple_options_then_return_params_with_parsed_val
 
 #[test]
 fn when_parsing_unknown_option_then_return_unknown_option_error() {
-    for option in [
+    let unknown_options = [
         "--no-value",
         "--u=",
         "--unknown=10",
         "--unknown-option=test",
-    ] {
+    ];
+    for option in unknown_options {
         let arguments = [String::from(FILEPATH), String::from(option)];
         let expected = format!("Unknown option {}", option);
         assert_error!(AuthMonitorParams::from_arguments(&arguments), expected)
