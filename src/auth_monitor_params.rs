@@ -116,5 +116,5 @@ impl Display for AuthMonitorParams {
 }
 
 #[cfg(test)]
-#[path = "./auth_monitor_params.test.rs"]
-mod test;
+#[path = "./auth_monitor_params_tests.rs"]
+mod tests;

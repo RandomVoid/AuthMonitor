@@ -74,5 +74,5 @@ impl AuthMonitor {
 }
 
 #[cfg(test)]
-#[path = "./auth_monitor.test.rs"]
-mod test;
+#[path = "./auth_monitor_tests.rs"]
+mod tests;

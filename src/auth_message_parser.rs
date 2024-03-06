@@ -39,5 +39,5 @@ impl AuthMessageParser {
 }
 
 #[cfg(test)]
-#[path = "./auth_message_parser.test.rs"]
-mod test;
+#[path = "./auth_message_parser_tests.rs"]
+mod tests;
