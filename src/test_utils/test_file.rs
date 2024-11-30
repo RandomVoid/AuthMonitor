@@ -5,17 +5,26 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use chrono::Local;
 
-pub const AUTH_FAILED_TEST_MESSAGES: [&str; 3] = [
+pub const AUTH_FAILED_TEST_MESSAGES: [&str; 6] = [
     "workstation sudo: pam_unix(sudo:auth): authentication failure; logname=john uid=1000 euid=0 tty=/dev/pts/7 ruser=john rhost=  user=john",
     "workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname= uid=1000 euid=1000 tty= ruser= rhost=  user=john",
-    "workstation unix_chkpwd[222793]: password check failed for user (john)"
+    "workstation unix_chkpwd[222793]: password check failed for user (john)",
+    "workstation kscreenlocker_greet: pam_unix(kde:auth): authentication failure; logname=john uid=1000 euid=1000 tty= ruser= rhost=  user=john",
+    "workstation kscreenlocker_greet: pam_unix(kde-fingerprint:auth): authentication failure; logname=john uid=1000 euid=1000 tty= ruser= rhost=  user=john",
+    "workstation kscreenlocker_greet: pam_unix(kde-smartcard:auth): authentication failure; logname=john uid=1000 euid=1000 tty= ruser= rhost=  user=john",
 ];
 
-const OTHER_TEST_MESSAGES: [&str; 4] = [
+const OTHER_TEST_MESSAGES: [&str; 10] = [
     "workstation dbus-daemon[1988]: [system] Failed to activate service 'org.bluez': timed out (service_start_timeout=25000ms)",
     "workstation CRON[9419]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
     "workstation CRON[9419]: pam_unix(cron:session): session closed for user root",
     "workstation PackageKit: uid 1000 is trying to obtain org.freedesktop.packagekit.system-sources-refresh auth (only_trusted:0)",
+    "workstation kscreenlocker_greet: pam_unix(kde-fingerprint:auth): unexpected response from failed conversation function",
+    "workstation kscreenlocker_greet: pam_unix(kde-fingerprint:auth): conversation failed",
+    "workstation kscreenlocker_greet: pam_unix(kde-fingerprint:auth): auth could not identify password for [john]",
+    "workstation kscreenlocker_greet: pam_unix(kde-smartcard:auth): unexpected response from failed conversation function",
+    "workstation kscreenlocker_greet: pam_unix(kde-smartcard:auth): conversation failed",
+    "workstation kscreenlocker_greet: pam_unix(kde-smartcard:auth): auth could not identify password for [john]",
 ];
 
 pub struct TestFile {
