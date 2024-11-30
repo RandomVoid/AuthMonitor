@@ -40,13 +40,10 @@ impl AuthFileWatcher {
 
     fn open_existing_file(&mut self) {
         self.open_file();
-        match &mut self.reader {
-            Some(reader) => {
-                reader.seek_to_end().unwrap_or_else(|error| {
-                    eprintln!("Error seeking to end of file: {}", error);
-                });
-            }
-            None => {}
+        if let Some(reader) = &mut self.reader {
+            reader.seek_to_end().unwrap_or_else(|error| {
+                eprintln!("Error seeking to end of file: {}", error);
+            });
         }
     }
 
@@ -113,11 +110,8 @@ impl AuthFileWatcher {
             return;
         }
 
-        match &mut self.reader {
-            Some(reader) => {
-                reader.read_new_lines(parse_line);
-            }
-            None => {}
+        if let Some(reader) = &mut self.reader {
+            reader.read_new_lines(parse_line);
         };
     }
 
