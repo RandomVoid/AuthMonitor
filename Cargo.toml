@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-inotify = "0.10.2"
+inotify = "0.11.0"
 signal-hook = "0.3.17"
 
 [dev-dependencies]
