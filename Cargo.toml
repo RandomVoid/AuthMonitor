@@ -8,4 +8,4 @@ inotify = "0.11.0"
 signal-hook = "0.3.17"
 
 [dev-dependencies]
-chrono = "0.4.34"
+chrono = "0.4.40"
